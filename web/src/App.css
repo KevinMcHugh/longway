@@ -1,20 +1,27 @@
 :root {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
-    sans-serif;
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   color: #e2e8f0;
   background-color: #0f172a;
 }
 
 #root {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 3rem 1.5rem;
+  width: 100%;
+  height: 100vh;
 }
 
 .app {
+  height: 100%;
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  padding: 1.5rem;
+  box-sizing: border-box;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 }
 
 .eyebrow {
@@ -36,17 +43,30 @@ h1 {
   line-height: 1.6;
 }
 
-.acts {
+.layout {
+  flex: 1;
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: 1.2fr 1fr;
   gap: 1rem;
+  min-height: 0;
 }
 
-.act {
+.pane {
   border: 1px solid #1e293b;
   border-radius: 12px;
   padding: 1rem;
   background: linear-gradient(145deg, #0b1222, #0f172a);
+  min-height: 0;
+  overflow: hidden;
+}
+
+.acts {
+  height: calc(100% - 48px);
+}
+
+.act {
+  width: 100%;
+  height: 100%;
 }
 
 .act h2 {
@@ -56,6 +76,8 @@ h1 {
 
 .grid {
   position: relative;
+  width: 100%;
+  height: calc(100% - 36px);
 }
 
 .row {
@@ -67,7 +89,7 @@ h1 {
 }
 
 .node-wrapper {
-  position: relative;
+  position: absolute;
 }
 
 .edge {
@@ -103,7 +125,6 @@ h1 {
 }
 
 .seed {
-  margin-top: 0.75rem;
   color: #94a3b8;
 }
 
@@ -111,7 +132,7 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
 }
 
 .controls button {
@@ -126,4 +147,26 @@ h1 {
 .controls button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.details ul {
+  padding-left: 1.2rem;
+  margin: 0;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.details li {
+  line-height: 1.4;
+  color: #cbd5e1;
+}
+
+.meta {
+  color: #94a3b8;
 }

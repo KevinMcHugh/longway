@@ -2,9 +2,9 @@ import './App.css'
 import { generateRun } from './lib/path'
 import { useMemo, useState } from 'react'
 
-const rowSpacing = 100
-const colSpacing = 90
-const nodeSize = 36
+const rowSpacing = 70
+const colSpacing = 80
+const nodeSize = 32
 
 function App() {
   const { acts, seed } = useMemo(() => generateRun(Date.now()), [])
@@ -13,62 +13,80 @@ function App() {
 
   const current = acts[currentAct]
   const selectedNode =
-    current?.rows[selected.row]?.find((n) => n.col === selected.col) ?? null
+    current?.rows[selected.row]?.find((n) => n.col === selected.col) ?? current?.rows[0]?.[0]
+
+  // keep selection in bounds when act changes
+  if (selected.act !== currentAct) {
+    setSelected({ act: currentAct, row: 0, col: 0 })
+  }
 
   return (
     <main className="app">
-      <p className="eyebrow">Long Way To The Top</p>
-      <h1>Rhythm roguelike — React prototype</h1>
-      <p className="lede">
-        Hello! This is the starting point for the web client. We&apos;ll add sector maps,
-        challenge selection, and rhythm hooks here.
-      </p>
-
-      <div className="controls">
-        <button onClick={() => setCurrentAct((a) => Math.max(0, a - 1))} disabled={currentAct === 0}>
-          Prev Act
-        </button>
-        <span>
-          Act {currentAct + 1} / {acts.length}
-        </span>
-        <button
-          onClick={() => setCurrentAct((a) => Math.min(acts.length - 1, a + 1))}
-          disabled={currentAct === acts.length - 1}
-        >
-          Next Act
-        </button>
-      </div>
-
-      <section className="acts">
-        <ActView
-          act={current}
-          onSelect={(row, col) => setSelected({ act: currentAct, row, col })}
-          selected={selected}
-        />
-      </section>
-
-      {selectedNode && (
-        <div className="details">
-          <p className="eyebrow">Challenge</p>
-          <h3>{selectedNode.challenge?.name ?? 'Unknown'}</h3>
-          <p className="lede">{selectedNode.challenge?.summary}</p>
-          {selectedNode.challenge?.songs && (
-            <ul>
-              {selectedNode.challenge.songs.map((s) => (
-                <li key={`${s.id}-${s.title}`}>
-                  <strong>{s.title}</strong> — {s.artist}{' '}
-                  {s.year ? <span className="meta">({s.year})</span> : null}
-                  {s.genre ? <span className="meta"> • {s.genre}</span> : null}
-                  {s.length ? <span className="meta"> • {s.length}</span> : null}
-                  {s.difficulty ? <span className="meta"> • diff {s.difficulty}/6</span> : null}
-                </li>
-              ))}
-            </ul>
-          )}
+      <header className="header">
+        <div>
+          <p className="eyebrow">Long Way To The Top</p>
+          <h1>Rhythm roguelike — React prototype</h1>
+          <p className="lede">
+            Hello! This is the starting point for the web client. We&apos;ll add sector maps,
+            challenge selection, and rhythm hooks here.
+          </p>
         </div>
-      )}
+        <div className="seed">Seed: {seed}</div>
+      </header>
 
-      <p className="seed">Seed: {seed}</p>
+      <div className="layout">
+        <div className="pane left">
+          <div className="controls">
+            <button
+              onClick={() => setCurrentAct((a) => Math.max(0, a - 1))}
+              disabled={currentAct === 0}
+            >
+              Prev Act
+            </button>
+            <span>
+              Act {currentAct + 1} / {acts.length}
+            </span>
+            <button
+              onClick={() => setCurrentAct((a) => Math.min(acts.length - 1, a + 1))}
+              disabled={currentAct === acts.length - 1}
+            >
+              Next Act
+            </button>
+          </div>
+
+          <section className="acts">
+            <ActView
+              act={current}
+              onSelect={(row, col) => setSelected({ act: currentAct, row, col })}
+              selected={selected}
+            />
+          </section>
+        </div>
+        <aside className="pane right">
+          {selectedNode ? (
+            <div className="details">
+              <p className="eyebrow">Challenge</p>
+              <h3>{selectedNode.challenge?.name ?? 'Unknown'}</h3>
+              <p className="lede">{selectedNode.challenge?.summary}</p>
+              {selectedNode.challenge?.songs && (
+                <ul>
+                  {selectedNode.challenge.songs.map((s) => (
+                    <li key={`${s.id}-${s.title}`}>
+                      <strong>{s.title}</strong> — {s.artist}{' '}
+                      {s.year ? <span className="meta">({s.year})</span> : null}
+                      {s.genre ? <span className="meta"> • {s.genre}</span> : null}
+                      {s.length ? <span className="meta"> • {s.length}</span> : null}
+                      {s.difficulty ? <span className="meta"> • diff {s.difficulty}/6</span> : null}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          ) : (
+            <p className="lede">Select a node to see details.</p>
+          )}
+        </aside>
+      </div>
     </main>
   )
 }
