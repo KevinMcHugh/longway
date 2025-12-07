@@ -27,3 +27,9 @@ const (
 	colSpacing            = 4
 	challengeSongListSize = 12
 )
+
+type nodeRun struct {
+	col   int
+	songs []song
+	stars []int
+}

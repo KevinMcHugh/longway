@@ -11,20 +11,26 @@ import (
 )
 
 type model struct {
-	acts       []act
-	currentAct int
-	cursorRow  int
-	cursorCol  int
-	songs      []song
-	allowed    []int
-	allowedIdx int
-	committed  map[int]int
-	stars      map[int]int
-	awaitStars bool
-	starInput  string
-	seed       int64
-	width      int
-	height     int
+	acts           []act
+	currentAct     int
+	cursorRow      int
+	cursorCol      int
+	songs          []song
+	allowed        []int
+	allowedIdx     int
+	committed      map[int]int
+	runs           map[int]nodeRun
+	selectingSongs bool
+	selectionPool  []song
+	selectionIdx   int
+	selectedSongs  []song
+	selectedStars  []int
+	enteringStars  bool
+	starEntryIdx   int
+	starInput      string
+	seed           int64
+	width          int
+	height         int
 }
 
 var (
@@ -49,7 +55,7 @@ func newModel(songs []song) model {
 		allowed:    initAllowed(acts[0]),
 		allowedIdx: 0,
 		committed:  make(map[int]int),
-		stars:      make(map[int]int),
+		runs:       make(map[int]nodeRun),
 		seed:       seed,
 	}
 }
@@ -65,6 +71,35 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.height = msg.Height
 		return m, nil
 	case tea.KeyMsg:
+		if m.selectingSongs {
+			switch msg.String() {
+			case "up", "k":
+				m.moveSongSelection(-1)
+			case "down", "j":
+				m.moveSongSelection(1)
+			case "enter", " ":
+				m.toggleSongSelection()
+			case "esc":
+				m.selectingSongs = false
+				m.selectedSongs = nil
+			}
+			return m, nil
+		}
+
+		if m.enteringStars {
+			switch msg.String() {
+			case "backspace":
+				if len(m.starInput) > 0 {
+					m.starInput = m.starInput[:len(m.starInput)-1]
+				}
+			case "enter":
+				m.submitStars()
+			case "0", "1", "2", "3", "4", "5", "6":
+				m.starInput = msg.String()
+			}
+			return m, nil
+		}
+
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
@@ -76,19 +111,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "right", "l":
 			m.moveHorizontal(1)
 		case "enter":
-			if m.awaitStars {
-				m.submitStars()
-			} else {
-				m.commitSelection()
-			}
-		case "backspace":
-			if m.awaitStars && len(m.starInput) > 0 {
-				m.starInput = m.starInput[:len(m.starInput)-1]
-			}
-		case "0", "1", "2", "3", "4", "5", "6":
-			if m.awaitStars {
-				m.starInput = msg.String()
-			}
+			m.commitSelection()
 		case "]":
 			m.nextAct()
 		case "[":
@@ -117,11 +140,9 @@ func (m model) View() string {
 	actView := renderAct(m.acts[m.currentAct], m.cursorRow, m.cursorCol)
 	body := lipgloss.JoinVertical(lipgloss.Left, actView)
 
-	preview := renderNodePreview(m.selectedNode())
-	if m.awaitStars {
-		preview += fmt.Sprintf("\nStars? [0-6]: %s", m.starInput)
-	} else if val, ok := m.stars[m.cursorRow]; ok {
-		preview += fmt.Sprintf("\nRecorded stars: %d", val)
+	preview := renderNodePreview(m.selectedNode(), &m)
+	if m.enteringStars && len(m.selectedSongs) > 0 {
+		preview += fmt.Sprintf("\nStars for song %d/%d [0-6]: %s", m.starEntryIdx+1, len(m.selectedSongs), m.starInput)
 	}
 	previewBox := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
@@ -196,8 +217,14 @@ func (m *model) resetAct() {
 	m.allowed = initAllowed(m.acts[m.currentAct])
 	m.allowedIdx = 0
 	m.committed = make(map[int]int)
-	m.stars = make(map[int]int)
-	m.awaitStars = false
+	m.runs = make(map[int]nodeRun)
+	m.selectingSongs = false
+	m.enteringStars = false
+	m.selectionPool = nil
+	m.selectionIdx = 0
+	m.selectedSongs = nil
+	m.selectedStars = nil
+	m.starEntryIdx = 0
 	m.starInput = ""
 }
 
@@ -287,7 +314,7 @@ func nodeGlyph(n node) rune {
 	}
 }
 
-func renderNodePreview(n *node) string {
+func renderNodePreview(n *node, m *model) string {
 	if n == nil {
 		return "No node selected."
 	}
@@ -300,8 +327,68 @@ func renderNodePreview(n *node) string {
 		var b strings.Builder
 		b.WriteString(fmt.Sprintf("Challenge: %s\n", n.challenge.name))
 		b.WriteString(fmt.Sprintf("Summary: %s\n", n.challenge.summary))
-		b.WriteString("\nSongs: ???")
-		return b.String()
+
+		var songsToShow []song
+		var stars []int
+		var selecting bool
+		var entering bool
+		var currentStarIdx int
+		var selectedIDs map[string]struct{}
+
+		if m != nil {
+			selecting = m.selectingSongs
+			entering = m.enteringStars
+			currentStarIdx = m.starEntryIdx
+			selectedIDs = make(map[string]struct{})
+			for _, s := range m.selectedSongs {
+				selectedIDs[songKey(s)] = struct{}{}
+			}
+
+			if m.selectingSongs || m.enteringStars {
+				songsToShow = m.selectionPool
+				stars = m.selectedStars
+			} else if run, ok := m.runs[m.cursorRow]; ok {
+				songsToShow = run.songs
+				stars = run.stars
+			}
+		}
+
+		if len(songsToShow) == 0 {
+			b.WriteString("\nSongs: ???")
+			return b.String()
+		}
+
+		b.WriteString("\nSongs:\n")
+		for i, s := range songsToShow {
+			prefix := "- "
+			if selecting {
+				if _, ok := selectedIDs[songKey(s)]; ok {
+					prefix = "[x] "
+				} else {
+					prefix = "[ ] "
+				}
+			} else if entering && i == currentStarIdx {
+				prefix = "> "
+			}
+			line := fmt.Sprintf("%s%s — %s", prefix, s.title, s.artist)
+			if s.year != 0 {
+				line += fmt.Sprintf(" (%d)", s.year)
+			}
+			if s.length != "" {
+				line += fmt.Sprintf(" [%s]", s.length)
+			}
+			if s.difficulty > 0 {
+				line += fmt.Sprintf(" • diff %d/6", s.difficulty)
+			}
+			if s.genre != "" {
+				line += fmt.Sprintf(" • %s", s.genre)
+			}
+			if i < len(stars) && stars[i] > 0 {
+				line += fmt.Sprintf(" • stars %d", stars[i])
+			}
+			b.WriteString(line + "\n")
+		}
+		return strings.TrimRight(b.String(), "\n")
 	default:
 		return "Unknown node."
 	}

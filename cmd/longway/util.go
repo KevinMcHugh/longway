@@ -13,3 +13,10 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+func songKey(s song) string {
+	if s.id != "" {
+		return s.id
+	}
+	return s.title + "|" + s.artist
+}

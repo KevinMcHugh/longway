@@ -117,7 +117,7 @@ func TestRenderNodePreviewIncludesChallengeDetails(t *testing.T) {
 		},
 	}
 
-	out := renderNodePreview(n)
+	out := renderNodePreview(n, nil)
 	if !strings.Contains(out, "TestChallenge") || !strings.Contains(out, "Play it.") {
 		t.Fatalf("renderNodePreview missing challenge details: %s", out)
 	}
