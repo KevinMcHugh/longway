@@ -12,6 +12,7 @@ function App() {
   const [currentAct, setCurrentAct] = useState(0)
   const [selected, setSelected] = useState({ act: 0, row: 0, col: 0 })
   const [phase, setPhase] = useState('idle') // idle | selecting | entering | done
+  const [currentRow, setCurrentRow] = useState(0)
   const [choices, setChoices] = useState({})
   const [selectedSongs, setSelectedSongs] = useState([])
   const [starEntries, setStarEntries] = useState([])
@@ -22,6 +23,7 @@ function App() {
     setPhase('idle')
     setSelectedSongs([])
     setStarEntries([])
+    setCurrentRow(0)
   }, [currentAct])
 
   const current = acts[currentAct]
@@ -68,8 +70,8 @@ function App() {
               onSelect={(row, col) => handleSelectNode(row, col)}
               selected={selected}
               reachable={{
-                row: selected.row,
-                cols: reachableCols(current, selected.row, choices, currentAct),
+                row: currentRow,
+                cols: reachableCols(current, currentRow, choices, currentAct),
               }}
             />
           </section>
@@ -82,11 +84,17 @@ function App() {
               <p className="lede">{selectedNode.challenge?.summary}</p>
               <div className="actions">
                 {phase === 'idle' && (
-                  <button onClick={startChallenge} disabled={!isReachable(selected, choices, current)}>
+                  <button
+                    onClick={startChallenge}
+                    disabled={
+                      !isReachable(selected, choices, current, currentRow, currentAct) ||
+                      selected.row !== currentRow
+                    }
+                  >
                     Start challenge
                   </button>
                 )}
-                {phase === 'done' && selected.row < current.rows.length - 1 && (
+                {phase === 'done' && currentRow < current.rows.length - 1 && (
                   <button onClick={advanceRow}>Advance</button>
                 )}
               </div>
@@ -176,17 +184,19 @@ function App() {
     setCurrentAct(next)
     setSelected({ act: next, row: 0, col: 0 })
     setPhase('idle')
+    setCurrentRow(0)
     setSelectedSongs([])
     setStarEntries([])
   }
 
-  function isReachable(sel, choiceMap, actData) {
-    const cols = reachableCols(actData, sel, choiceMap)
+  function isReachable(sel, choiceMap, actData, row, actIndex) {
+    if (sel.row !== row) return false
+    const cols = reachableCols(actData, row, choiceMap, actIndex)
     return cols.includes(sel.col)
   }
 
   function handleSelectNode(row, col) {
-    if (!isReachable({ act: currentAct, row, col }, choices, current)) return
+    if (!isReachable({ act: currentAct, row, col }, choices, current, currentRow, currentAct)) return
     if (phase !== 'idle') return
     setSelected({ act: currentAct, row, col })
   }
@@ -239,11 +249,12 @@ function App() {
   }
 
   function advanceRow() {
-    const nextRow = selected.row + 1
+    const nextRow = currentRow + 1
     if (nextRow >= current.rows.length) return
-    const prevChoice = choices[currentAct]?.[selected.row] ?? selected.col
-    const edges = current.rows[selected.row][prevChoice]?.edges || []
+    const prevChoice = choices[currentAct]?.[currentRow] ?? selected.col
+    const edges = current.rows[currentRow][prevChoice]?.edges || []
     const nextCol = edges[0] ?? 0
+    setCurrentRow(nextRow)
     setSelected({ act: currentAct, row: nextRow, col: nextCol })
     setPhase('idle')
     setSelectedSongs([])
