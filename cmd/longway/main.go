@@ -6,12 +6,12 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
-	"strconv"
 )
 
 type model struct {
@@ -50,6 +50,8 @@ const (
 	challengeTest challengeType = iota
 	challengeDecade
 	challengeLongSong
+	challengeGenre
+	challengeDifficulty
 )
 
 type challenge struct {
@@ -390,6 +392,19 @@ func parseDifficulty(val string) int {
 	return d
 }
 
+func difficultyTier(d int) string {
+	switch {
+	case d >= 6:
+		return "expert"
+	case d == 5:
+		return "hard"
+	case d == 3 || d == 4:
+		return "medium"
+	default:
+		return "easy"
+	}
+}
+
 func connectRows(prev []node, next []node, rng *rand.Rand) {
 	incoming := make([]int, len(next))
 
@@ -428,6 +443,8 @@ func newChallenge(songs []song, rng *rand.Rand) *challenge {
 	creators := []func([]song, *rand.Rand) (*challenge, bool){
 		newDecadeChallenge,
 		newLongSongChallenge,
+		newGenreChallenge,
+		newDifficultyChallenge,
 	}
 
 	if rng == nil {
@@ -498,6 +515,80 @@ func newLongSongChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 		summary: fmt.Sprintf("Pick any 3 of these %d long tracks (over 5 minutes).", len(selected)),
 		songs:   selected,
 	}, true
+}
+
+func newGenreChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+	byGenre := make(map[string][]song)
+	for _, s := range songs {
+		if s.genre == "" {
+			continue
+		}
+		byGenre[strings.ToLower(s.genre)] = append(byGenre[strings.ToLower(s.genre)], s)
+	}
+
+	var eligible []string
+	for g, list := range byGenre {
+		if len(list) >= 3 {
+			eligible = append(eligible, g)
+		}
+	}
+
+	if len(eligible) == 0 {
+		return nil, false
+	}
+
+	genreKey := eligible[rng.Intn(len(eligible))]
+	pool := byGenre[genreKey]
+	selected := sampleSongs(pool, min(challengeSongListSize, len(pool)), rng)
+
+	label := strings.Title(genreKey)
+	return &challenge{
+		id:      fmt.Sprintf("genre-%s", genreKey),
+		name:    "GenreChallenge",
+		summary: fmt.Sprintf("Pick any 3 of these %d %s tracks.", len(selected), label),
+		songs:   selected,
+	}, true
+}
+
+func newDifficultyChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+	if len(songs) == 0 {
+		return nil, false
+	}
+
+	tiers := map[string][]song{
+		"easy":   {},
+		"medium": {},
+		"hard":   {},
+		"expert": {},
+	}
+
+	for _, s := range songs {
+		switch {
+		case s.difficulty <= 2:
+			tiers["easy"] = append(tiers["easy"], s)
+		case s.difficulty == 3 || s.difficulty == 4:
+			tiers["medium"] = append(tiers["medium"], s)
+		case s.difficulty == 5:
+			tiers["hard"] = append(tiers["hard"], s)
+		case s.difficulty >= 6:
+			tiers["expert"] = append(tiers["expert"], s)
+		}
+	}
+
+	labels := []string{"expert", "hard", "medium", "easy"}
+	for _, label := range labels {
+		if len(tiers[label]) >= 3 {
+			selected := sampleSongs(tiers[label], min(challengeSongListSize, len(tiers[label])), rng)
+			return &challenge{
+				id:      fmt.Sprintf("difficulty-%s", label),
+				name:    "DifficultyChallenge",
+				summary: fmt.Sprintf("Pick any 3 of these %d %s tracks.", len(selected), label),
+				songs:   selected,
+			}, true
+		}
+	}
+
+	return nil, false
 }
 
 func sampleSongs(pool []song, count int, rng *rand.Rand) []song {

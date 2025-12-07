@@ -230,3 +230,53 @@ func TestNewLongSongChallengePicksLongTracks(t *testing.T) {
 		}
 	}
 }
+
+func TestNewGenreChallengeUsesSameGenre(t *testing.T) {
+	rng := rand.New(rand.NewSource(2))
+	songs := []song{
+		{title: "SongA", artist: "A", genre: "Rock"},
+		{title: "SongB", artist: "B", genre: "Rock"},
+		{title: "SongC", artist: "C", genre: "Rock"},
+		{title: "SongD", artist: "D", genre: "Pop"},
+	}
+
+	ch, ok := newGenreChallenge(songs, rng)
+	if !ok {
+		t.Fatalf("expected genre challenge")
+	}
+	if len(ch.songs) == 0 || len(ch.songs) > challengeSongListSize {
+		t.Fatalf("expected 1..%d songs, got %d", challengeSongListSize, len(ch.songs))
+	}
+	for _, s := range ch.songs {
+		if strings.ToLower(s.genre) != strings.ToLower(ch.songs[0].genre) {
+			t.Fatalf("songs from different genres: %s vs %s", s.genre, ch.songs[0].genre)
+		}
+	}
+}
+
+func TestNewDifficultyChallengeUsesTier(t *testing.T) {
+	rng := rand.New(rand.NewSource(3))
+	songs := []song{
+		{title: "Easy", difficulty: 1},
+		{title: "MedA", difficulty: 3},
+		{title: "MedB", difficulty: 4},
+		{title: "MedC", difficulty: 4},
+		{title: "Hard", difficulty: 5},
+		{title: "Expert", difficulty: 6},
+	}
+
+	ch, ok := newDifficultyChallenge(songs, rng)
+	if !ok {
+		t.Fatalf("expected difficulty challenge")
+	}
+	if len(ch.songs) == 0 || len(ch.songs) > challengeSongListSize {
+		t.Fatalf("expected 1..%d songs, got %d", challengeSongListSize, len(ch.songs))
+	}
+
+	firstTier := difficultyTier(ch.songs[0].difficulty)
+	for _, s := range ch.songs {
+		if difficultyTier(s.difficulty) != firstTier {
+			t.Fatalf("mixed difficulty tiers: %d vs %d", s.difficulty, ch.songs[0].difficulty)
+		}
+	}
+}
