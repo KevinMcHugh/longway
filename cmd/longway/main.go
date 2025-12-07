@@ -2,54 +2,49 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"time"
 
-	"github.com/charmbracelet/bubbles/progress"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
 
-type tickMsg time.Time
-
-const (
-	tickInterval = 250 * time.Millisecond
-)
-
 type model struct {
-	progress progress.Model
-	percent  float64
-	stage    int
-	stages   []string
-	paused   bool
-	width    int
-	height   int
+	acts   []act
+	seed   int64
+	width  int
+	height int
 }
 
-func newModel() model {
-	p := progress.New(
-		progress.WithDefaultGradient(),
-	)
+type node struct {
+	col   int
+	edges []int // indices into the next row
+}
 
+type act struct {
+	index int
+	rows  [][]node
+}
+
+const (
+	totalActs      = 3
+	rowsPerAct     = 8
+	minNodesPerRow = 2
+	maxNodesPerRow = 5
+	colSpacing     = 4
+)
+
+func newModel() model {
+	seed := time.Now().UnixNano()
 	return model{
-		progress: p,
-		stages: []string{
-			"Plot your route through derelict sectors (FTL vibes).",
-			"Draft your loadout and perks (Slay the Spire energy).",
-			"Hit the notes to break through (Clone Hero / YARG).",
-			"Watch the world react to your performance.",
-		},
+		acts: generateRun(seed),
+		seed: seed,
 	}
 }
 
 func (m model) Init() tea.Cmd {
-	return tea.Batch(tick(), tea.EnterAltScreen)
-}
-
-func tick() tea.Cmd {
-	return tea.Tick(tickInterval, func(t time.Time) tea.Msg {
-		return tickMsg(t)
-	})
+	return tea.EnterAltScreen
 }
 
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -62,34 +57,13 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return m, tea.Quit
-		case " ":
-			m.paused = !m.paused
-		case "n":
-			m.advanceStage()
 		case "r":
-			m.percent = 0
-			m.paused = false
+			m.seed = time.Now().UnixNano()
+			m.acts = generateRun(m.seed)
 		}
-	case tickMsg:
-		if !m.paused {
-			m.percent += 0.02
-			if m.percent >= 1 {
-				m.percent = 1
-				m.paused = true
-			}
-		}
-		return m, tick()
 	}
 
 	return m, nil
-}
-
-func (m *model) advanceStage() {
-	if m.stage+1 < len(m.stages) {
-		m.stage++
-		m.percent = 0
-		m.paused = false
-	}
 }
 
 func (m model) View() string {
@@ -101,46 +75,159 @@ func (m model) View() string {
 
 	sub := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#9AE6FF")).
-		Render("A roguelike rhythm climb inspired by FTL, Slay the Spire, and Balatro.")
+		Render("Three-act rhythm roguelike — routes like Slay the Spire, resolved by rhythm.")
 
-	stageStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#B6EEA6")).
-		Bold(true)
+	controls := "Controls: r rerolls the route • q quits"
 
-	body := lipgloss.NewStyle().
+	actViews := make([]string, 0, len(m.acts))
+	for _, a := range m.acts {
+		actViews = append(actViews, renderAct(a))
+	}
+
+	body := lipgloss.JoinVertical(lipgloss.Left, actViews...)
+
+	bodyBox := lipgloss.NewStyle().
 		Border(lipgloss.RoundedBorder()).
 		BorderForeground(lipgloss.Color("#6C7086")).
 		Padding(1, 2).
-		Width(max(60, m.width-4))
+		Width(max(70, m.width-4)).
+		Render(body)
 
-	progressBar := m.progress.ViewAs(m.percent)
-
-	stageLabel := fmt.Sprintf("Stage %d/%d", m.stage+1, len(m.stages))
-	stageDesc := m.stages[m.stage]
-
-	status := "Press space to pause/resume. n: next stage, r: reset, q: quit."
-	if m.paused && m.percent >= 1 {
-		status = "Stage complete. Press n to chart the next stretch."
-	} else if m.paused {
-		status = "Paused. Press space to continue climbing."
-	}
-
-	content := lipgloss.JoinVertical(lipgloss.Left,
-		stageStyle.Render(stageLabel),
-		stageDesc,
+	doc := lipgloss.JoinVertical(lipgloss.Left,
+		title,
+		sub,
+		fmt.Sprintf("Seed: %d", m.seed),
 		"",
-		progressBar,
+		bodyBox,
 		"",
-		status,
+		controls,
 	)
-
-	doc := lipgloss.JoinVertical(lipgloss.Left, title, sub, "", body.Render(content))
 
 	if m.height > 0 {
 		return lipgloss.Place(m.width, m.height, lipgloss.Center, lipgloss.Center, doc)
 	}
 
 	return doc
+}
+
+func generateRun(seed int64) []act {
+	rng := rand.New(rand.NewSource(seed))
+	acts := make([]act, totalActs)
+	for i := 0; i < totalActs; i++ {
+		acts[i] = generateAct(i+1, rng)
+	}
+	return acts
+}
+
+func generateAct(index int, rng *rand.Rand) act {
+	rows := make([][]node, rowsPerAct)
+	for row := 0; row < rowsPerAct; row++ {
+		count := minNodesPerRow + rng.Intn(maxNodesPerRow-minNodesPerRow+1)
+		nodes := make([]node, count)
+		for i := range nodes {
+			nodes[i] = node{col: i}
+		}
+		if row > 0 {
+			connectRows(rows[row-1], nodes, rng)
+		}
+		rows[row] = nodes
+	}
+
+	return act{
+		index: index,
+		rows:  rows,
+	}
+}
+
+func connectRows(prev []node, next []node, rng *rand.Rand) {
+	incoming := make([]int, len(next))
+
+	for i := range prev {
+		targets := pickTargets(len(next), rng)
+		prev[i].edges = append(prev[i].edges, targets...)
+		for _, t := range targets {
+			incoming[t]++
+		}
+	}
+
+	for j, seen := range incoming {
+		if seen == 0 {
+			src := rng.Intn(len(prev))
+			prev[src].edges = append(prev[src].edges, j)
+		}
+	}
+}
+
+func pickTargets(nextCount int, rng *rand.Rand) []int {
+	targetCount := 1 + rng.Intn(2) // 1 or 2 targets
+	targets := make([]int, 0, targetCount)
+	seen := make(map[int]struct{})
+	for len(targets) < targetCount {
+		t := rng.Intn(nextCount)
+		if _, ok := seen[t]; ok {
+			continue
+		}
+		seen[t] = struct{}{}
+		targets = append(targets, t)
+	}
+	return targets
+}
+
+func renderAct(a act) string {
+	height := (len(a.rows) * 2) - 1
+	maxCols := 0
+	for _, row := range a.rows {
+		if len(row) > maxCols {
+			maxCols = len(row)
+		}
+	}
+	width := maxCols*colSpacing + 1
+
+	grid := make([][]rune, height)
+	for i := range grid {
+		grid[i] = make([]rune, width)
+		for j := range grid[i] {
+			grid[i][j] = ' '
+		}
+	}
+
+	for rowIdx, row := range a.rows {
+		y := rowIdx * 2
+		for _, n := range row {
+			x := n.col * colSpacing
+			grid[y][x] = 'o'
+			if rowIdx == len(a.rows)-1 {
+				continue
+			}
+			for _, target := range n.edges {
+				tx := target * colSpacing
+				connY := y + 1
+				connX := x
+				if tx > x {
+					connX = x + (tx-x)/2
+					grid[connY][connX] = '\\'
+				} else if tx < x {
+					connX = x - (x-tx)/2
+					grid[connY][connX] = '/'
+				} else {
+					grid[connY][connX] = '|'
+				}
+			}
+		}
+	}
+
+	lines := make([]string, len(grid))
+	for i, r := range grid {
+		lines[i] = string(r)
+	}
+
+	title := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#B6EEA6")).
+		Bold(true).
+		Render(fmt.Sprintf("Act %d", a.index))
+
+	panel := lipgloss.JoinVertical(lipgloss.Left, append([]string{title}, lines...)...)
+	return panel
 }
 
 func max(a, b int) int {
