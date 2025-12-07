@@ -13,6 +13,7 @@
 - Every change should land with tests that cover the behavior; if a test cannot be written, call it out explicitly and explain why.
 - Once tests pass, create a commit. Keep the subject short, start with a present-tense verb, and use a longer body to explain the change and its motivation.
 - Split code by responsibility (e.g., UI, challenges, song data, world generation) instead of accumulating logic in `main.go`; keep helpers close to their domain.
+- Maintain `docs/` with short write-ups for each feature shipped; update docs alongside code so they never fall behind behavior.
 
 ## Rhythm Integration
 - Treat rhythm execution as an external boundary: plan for adapters that can call out to YARG/Clone Hero chart/playback handlers.
