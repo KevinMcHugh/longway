@@ -1,6 +1,7 @@
 package main
 
 import (
+	"math/rand"
 	"path/filepath"
 	"runtime"
 	"strings"
@@ -9,7 +10,11 @@ import (
 
 func TestGenerateRunCreatesChallengeNodes(t *testing.T) {
 	seed := int64(12345)
-	songs := []song{{title: "Eye of the Tiger", artist: "Survivor"}}
+	songs := []song{
+		{title: "Eye of the Tiger", artist: "Survivor", length: "4:05", seconds: 245, year: 1982},
+		{title: "Through the Fire and Flames", artist: "DragonForce", length: "7:24", seconds: 444, year: 2006},
+		{title: "Knights of Cydonia", artist: "Muse", length: "6:06", seconds: 366, year: 2006},
+	}
 	acts := generateRun(seed, songs)
 
 	if len(acts) != totalActs {
@@ -31,11 +36,8 @@ func TestGenerateRunCreatesChallengeNodes(t *testing.T) {
 				if n.challenge == nil {
 					t.Fatalf("act %d row %d col %d missing challenge", a.index, rowIdx, colIdx)
 				}
-				if n.challenge.name != "TestChallenge" {
-					t.Fatalf("act %d row %d col %d challenge name = %s, want TestChallenge", a.index, rowIdx, colIdx, n.challenge.name)
-				}
-				if n.challenge.song != "Eye of the Tiger" {
-					t.Fatalf("act %d row %d col %d song = %s, want Eye of the Tiger", a.index, rowIdx, colIdx, n.challenge.song)
+				if len(n.challenge.songs) == 0 {
+					t.Fatalf("act %d row %d col %d challenge missing songs", a.index, rowIdx, colIdx)
 				}
 			}
 		}
@@ -146,8 +148,10 @@ func TestRenderNodePreviewIncludesChallengeDetails(t *testing.T) {
 		kind: nodeChallenge,
 		challenge: &challenge{
 			name:    "TestChallenge",
-			song:    "Eye of the Tiger",
 			summary: "Play it.",
+			songs: []song{
+				{title: "Eye of the Tiger", artist: "Survivor"},
+			},
 		},
 	}
 
@@ -178,5 +182,45 @@ func TestLoadSongsReadsCSV(t *testing.T) {
 	}
 	if !found {
 		t.Fatalf("expected Eye of the Tiger in songs.csv")
+	}
+}
+
+func TestNewDecadeChallengePicksSameDecade(t *testing.T) {
+	rng := rand.New(rand.NewSource(1))
+	songs := []song{
+		{title: "SongA", artist: "A", year: 1981},
+		{title: "SongB", artist: "B", year: 1982},
+		{title: "SongC", artist: "C", year: 1985},
+		{title: "Other", artist: "D", year: 1999},
+	}
+
+	ch, ok := newDecadeChallenge(songs, rng)
+	if !ok {
+		t.Fatalf("expected decade challenge")
+	}
+	for _, s := range ch.songs {
+		if decadeForYear(s.year) != decadeForYear(ch.songs[0].year) {
+			t.Fatalf("songs from different decades: %d vs %d", s.year, ch.songs[0].year)
+		}
+	}
+}
+
+func TestNewLongSongChallengePicksLongTracks(t *testing.T) {
+	rng := rand.New(rand.NewSource(1))
+	songs := []song{
+		{title: "Short", seconds: 200},
+		{title: "LongA", seconds: 301},
+		{title: "LongB", seconds: 400},
+		{title: "LongC", seconds: 500},
+	}
+
+	ch, ok := newLongSongChallenge(songs, rng)
+	if !ok {
+		t.Fatalf("expected long song challenge")
+	}
+	for _, s := range ch.songs {
+		if s.seconds <= 300 {
+			t.Fatalf("included non-long song: %v", s)
+		}
 	}
 }

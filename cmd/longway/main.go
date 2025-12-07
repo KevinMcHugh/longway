@@ -11,6 +11,7 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"strconv"
 )
 
 type model struct {
@@ -43,11 +44,19 @@ const (
 	nodeChallenge
 )
 
+type challengeType int
+
+const (
+	challengeTest challengeType = iota
+	challengeDecade
+	challengeLongSong
+)
+
 type challenge struct {
 	id      string
 	name    string
-	song    string
 	summary string
+	songs   []song
 }
 
 type song struct {
@@ -57,6 +66,8 @@ type song struct {
 	album      string
 	difficulty string
 	length     string
+	year       int
+	seconds    int
 }
 
 var (
@@ -199,7 +210,7 @@ func generateAct(index int, rng *rand.Rand, songs []song) act {
 			nodes[i] = node{
 				col:       i,
 				kind:      nodeChallenge,
-				challenge: newTestChallenge(songs),
+				challenge: newChallenge(songs, rng),
 			}
 		}
 		if row > 0 {
@@ -228,16 +239,19 @@ func newTestChallenge(songs []song) *challenge {
 	return &challenge{
 		id:      "test-challenge",
 		name:    "TestChallenge",
-		song:    s.title,
 		summary: summary,
+		songs:   []song{s},
 	}
 }
 
 func fallbackSong() song {
 	return song{
-		id:     "song-001",
-		title:  "Eye of the Tiger",
-		artist: "Survivor",
+		id:      "song-001",
+		title:   "Eye of the Tiger",
+		artist:  "Survivor",
+		year:    1982,
+		length:  "4:05",
+		seconds: 245,
 	}
 }
 
@@ -286,6 +300,8 @@ func loadSongs(path string) ([]song, error) {
 			album:      field(rec, 3),
 			difficulty: field(rec, 4),
 			length:     field(rec, 5),
+			year:       parseYear(field(rec, 6)),
+			seconds:    parseDurationToSeconds(field(rec, 5)),
 		})
 	}
 
@@ -310,6 +326,36 @@ func field(rec []string, idx int) string {
 		return ""
 	}
 	return strings.TrimSpace(rec[idx])
+}
+
+func parseYear(val string) int {
+	if val == "" {
+		return 0
+	}
+	y, err := strconv.Atoi(val)
+	if err != nil {
+		return 0
+	}
+	return y
+}
+
+func parseDurationToSeconds(val string) int {
+	if val == "" {
+		return 0
+	}
+	parts := strings.Split(val, ":")
+	if len(parts) != 2 {
+		return 0
+	}
+	minutes, err := strconv.Atoi(parts[0])
+	if err != nil {
+		return 0
+	}
+	seconds, err := strconv.Atoi(parts[1])
+	if err != nil {
+		return 0
+	}
+	return minutes*60 + seconds
 }
 
 func connectRows(prev []node, next []node, rng *rand.Rand) {
@@ -344,6 +390,102 @@ func pickTargets(nextCount int, rng *rand.Rand) []int {
 		targets = append(targets, t)
 	}
 	return targets
+}
+
+func newChallenge(songs []song, rng *rand.Rand) *challenge {
+	creators := []func([]song, *rand.Rand) (*challenge, bool){
+		newDecadeChallenge,
+		newLongSongChallenge,
+	}
+
+	if rng == nil {
+		rng = rand.New(rand.NewSource(time.Now().UnixNano()))
+	}
+
+	for _, idx := range rng.Perm(len(creators)) {
+		if c, ok := creators[idx](songs, rng); ok {
+			return c
+		}
+	}
+
+	return newTestChallenge(songs)
+}
+
+func newDecadeChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+	byDecade := make(map[int][]song)
+	for _, s := range songs {
+		dec := decadeForYear(s.year)
+		if dec == 0 {
+			continue
+		}
+		byDecade[dec] = append(byDecade[dec], s)
+	}
+
+	var eligible []int
+	for dec, list := range byDecade {
+		if len(list) >= 3 {
+			eligible = append(eligible, dec)
+		}
+	}
+
+	if len(eligible) == 0 {
+		return nil, false
+	}
+
+	decade := eligible[rng.Intn(len(eligible))]
+	pool := byDecade[decade]
+	selected := sampleSongs(pool, 3, rng)
+
+	summary := fmt.Sprintf("Play three tracks from the %ds.", decade)
+
+	return &challenge{
+		id:      fmt.Sprintf("decade-%d", decade),
+		name:    "DecadeChallenge",
+		summary: summary,
+		songs:   selected,
+	}, true
+}
+
+func newLongSongChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+	var longSongs []song
+	for _, s := range songs {
+		if s.seconds > 300 { // strictly over 5 minutes
+			longSongs = append(longSongs, s)
+		}
+	}
+
+	if len(longSongs) < 3 {
+		return nil, false
+	}
+
+	selected := sampleSongs(longSongs, 3, rng)
+
+	return &challenge{
+		id:      "long-song",
+		name:    "LongSongChallenge",
+		summary: "Play three long tracks (over 5 minutes) back-to-back.",
+		songs:   selected,
+	}, true
+}
+
+func sampleSongs(pool []song, count int, rng *rand.Rand) []song {
+	if len(pool) <= count {
+		return append([]song{}, pool...)
+	}
+
+	out := make([]song, 0, count)
+	indices := rng.Perm(len(pool))
+	for i := 0; i < count; i++ {
+		out = append(out, pool[indices[i]])
+	}
+	return out
+}
+
+func decadeForYear(year int) int {
+	if year == 0 {
+		return 0
+	}
+	return (year / 10) * 10
 }
 
 func (m model) selectedNode() *node {
@@ -526,7 +668,24 @@ func renderNodePreview(n *node) string {
 		if n.challenge == nil {
 			return "Challenge: unknown\nSong: unknown\nSummary: missing"
 		}
-		return fmt.Sprintf("Challenge: %s\nSong: %s\nSummary: %s", n.challenge.name, n.challenge.song, n.challenge.summary)
+		var b strings.Builder
+		b.WriteString(fmt.Sprintf("Challenge: %s\n", n.challenge.name))
+		b.WriteString(fmt.Sprintf("Summary: %s\n", n.challenge.summary))
+		b.WriteString("Songs:\n")
+		for _, s := range n.challenge.songs {
+			line := fmt.Sprintf("- %s — %s", s.title, s.artist)
+			if s.year != 0 {
+				line += fmt.Sprintf(" (%d)", s.year)
+			}
+			if s.length != "" {
+				line += fmt.Sprintf(" [%s]", s.length)
+			}
+			if s.difficulty != "" {
+				line += fmt.Sprintf(" • %s", s.difficulty)
+			}
+			b.WriteString(line + "\n")
+		}
+		return strings.TrimRight(b.String(), "\n")
 	default:
 		return "Unknown node."
 	}
