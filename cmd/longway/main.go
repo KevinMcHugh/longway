@@ -1,7 +1,9 @@
 package main
 
 import (
+	"encoding/csv"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"strings"
@@ -16,6 +18,7 @@ type model struct {
 	currentAct int
 	cursorRow  int
 	cursorCol  int
+	songs      []song
 	seed       int64
 	width      int
 	height     int
@@ -47,6 +50,15 @@ type challenge struct {
 	summary string
 }
 
+type song struct {
+	id         string
+	title      string
+	artist     string
+	album      string
+	difficulty string
+	length     string
+}
+
 var (
 	nodeStyle         = lipgloss.NewStyle().Foreground(lipgloss.Color("#B6EEA6")).Bold(true)
 	selectedNodeStyle = lipgloss.NewStyle().
@@ -61,15 +73,17 @@ const (
 	minNodesPerRow = 2
 	maxNodesPerRow = 5
 	colSpacing     = 4
+	songsFile      = "songs.csv"
 )
 
-func newModel() model {
+func newModel(songs []song) model {
 	seed := time.Now().UnixNano()
 	return model{
-		acts:       generateRun(seed),
+		acts:       generateRun(seed, songs),
 		currentAct: 0,
 		cursorRow:  0,
 		cursorCol:  0,
+		songs:      songs,
 		seed:       seed,
 	}
 }
@@ -90,7 +104,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return m, tea.Quit
 		case "r":
 			m.seed = time.Now().UnixNano()
-			m.acts = generateRun(m.seed)
+			m.acts = generateRun(m.seed, m.songs)
 			m.currentAct = 0
 			m.cursorRow = 0
 			m.cursorCol = 0
@@ -167,16 +181,16 @@ func (m model) View() string {
 	return doc
 }
 
-func generateRun(seed int64) []act {
+func generateRun(seed int64, songs []song) []act {
 	rng := rand.New(rand.NewSource(seed))
 	acts := make([]act, totalActs)
 	for i := 0; i < totalActs; i++ {
-		acts[i] = generateAct(i+1, rng)
+		acts[i] = generateAct(i+1, rng, songs)
 	}
 	return acts
 }
 
-func generateAct(index int, rng *rand.Rand) act {
+func generateAct(index int, rng *rand.Rand, songs []song) act {
 	rows := make([][]node, rowsPerAct)
 	for row := 0; row < rowsPerAct; row++ {
 		count := minNodesPerRow + rng.Intn(maxNodesPerRow-minNodesPerRow+1)
@@ -185,7 +199,7 @@ func generateAct(index int, rng *rand.Rand) act {
 			nodes[i] = node{
 				col:       i,
 				kind:      nodeChallenge,
-				challenge: newTestChallenge(),
+				challenge: newTestChallenge(songs),
 			}
 		}
 		if row > 0 {
@@ -200,13 +214,102 @@ func generateAct(index int, rng *rand.Rand) act {
 	}
 }
 
-func newTestChallenge() *challenge {
+func newTestChallenge(songs []song) *challenge {
+	s := fallbackSong()
+	if found, ok := findSongByTitle(songs, "Eye of the Tiger"); ok {
+		s = found
+	}
+
+	summary := "Play \"Eye of the Tiger\" to push through this encounter."
+	if s.artist != "" && s.title != "" {
+		summary = fmt.Sprintf("Play \"%s\" by %s to push through this encounter.", s.title, s.artist)
+	}
+
 	return &challenge{
 		id:      "test-challenge",
 		name:    "TestChallenge",
-		song:    "Eye of the Tiger",
-		summary: "Play \"Eye of the Tiger\" to push through this encounter.",
+		song:    s.title,
+		summary: summary,
 	}
+}
+
+func fallbackSong() song {
+	return song{
+		id:     "song-001",
+		title:  "Eye of the Tiger",
+		artist: "Survivor",
+	}
+}
+
+func findSongByTitle(songs []song, title string) (song, bool) {
+	for _, s := range songs {
+		if strings.EqualFold(s.title, title) {
+			return s, true
+		}
+	}
+	return song{}, false
+}
+
+func loadSongs(path string) ([]song, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+	defer file.Close()
+
+	reader := csv.NewReader(file)
+	reader.TrimLeadingSpace = true
+
+	var songs []song
+	for {
+		rec, err := reader.Read()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			return nil, err
+		}
+		if len(rec) == 0 {
+			continue
+		}
+		if isHeader(rec) {
+			continue
+		}
+		if len(rec) < 3 {
+			return nil, fmt.Errorf("invalid song record (need at least id,title,artist): %v", rec)
+		}
+
+		songs = append(songs, song{
+			id:         strings.TrimSpace(rec[0]),
+			title:      strings.TrimSpace(rec[1]),
+			artist:     strings.TrimSpace(rec[2]),
+			album:      field(rec, 3),
+			difficulty: field(rec, 4),
+			length:     field(rec, 5),
+		})
+	}
+
+	if len(songs) == 0 {
+		return nil, fmt.Errorf("no songs loaded from %s", path)
+	}
+
+	return songs, nil
+}
+
+func isHeader(rec []string) bool {
+	if len(rec) < 3 {
+		return false
+	}
+	return strings.EqualFold(strings.TrimSpace(rec[0]), "id") &&
+		strings.EqualFold(strings.TrimSpace(rec[1]), "title") &&
+		strings.EqualFold(strings.TrimSpace(rec[2]), "artist")
+}
+
+func field(rec []string, idx int) string {
+	if idx >= len(rec) {
+		return ""
+	}
+	return strings.TrimSpace(rec[idx])
 }
 
 func connectRows(prev []node, next []node, rng *rand.Rand) {
@@ -420,6 +523,9 @@ func renderNodePreview(n *node) string {
 
 	switch n.kind {
 	case nodeChallenge:
+		if n.challenge == nil {
+			return "Challenge: unknown\nSong: unknown\nSummary: missing"
+		}
 		return fmt.Sprintf("Challenge: %s\nSong: %s\nSummary: %s", n.challenge.name, n.challenge.song, n.challenge.summary)
 	default:
 		return "Unknown node."
@@ -427,7 +533,13 @@ func renderNodePreview(n *node) string {
 }
 
 func main() {
-	m := newModel()
+	songs, err := loadSongs(songsFile)
+	if err != nil {
+		fmt.Println("could not load songs:", err)
+		os.Exit(1)
+	}
+
+	m := newModel(songs)
 	if _, err := tea.NewProgram(m, tea.WithAltScreen()).Run(); err != nil {
 		fmt.Println("could not start program:", err)
 		os.Exit(1)

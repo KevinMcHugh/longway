@@ -1,13 +1,16 @@
 package main
 
 import (
+	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
 
 func TestGenerateRunCreatesChallengeNodes(t *testing.T) {
 	seed := int64(12345)
-	acts := generateRun(seed)
+	songs := []song{{title: "Eye of the Tiger", artist: "Survivor"}}
+	acts := generateRun(seed, songs)
 
 	if len(acts) != totalActs {
 		t.Fatalf("expected %d acts, got %d", totalActs, len(acts))
@@ -151,5 +154,29 @@ func TestRenderNodePreviewIncludesChallengeDetails(t *testing.T) {
 	out := renderNodePreview(n)
 	if !strings.Contains(out, "TestChallenge") || !strings.Contains(out, "Eye of the Tiger") {
 		t.Fatalf("renderNodePreview missing challenge details: %s", out)
+	}
+}
+
+func TestLoadSongsReadsCSV(t *testing.T) {
+	_, filename, _, _ := runtime.Caller(0)
+	path := filepath.Join(filepath.Dir(filename), "..", "..", "songs.csv")
+
+	songs, err := loadSongs(path)
+	if err != nil {
+		t.Fatalf("loadSongs error: %v", err)
+	}
+	if len(songs) == 0 {
+		t.Fatalf("expected songs from CSV")
+	}
+
+	found := false
+	for _, s := range songs {
+		if strings.EqualFold(s.title, "Eye of the Tiger") && strings.EqualFold(s.artist, "Survivor") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Fatalf("expected Eye of the Tiger in songs.csv")
 	}
 }
