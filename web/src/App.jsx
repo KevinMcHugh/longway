@@ -6,6 +6,7 @@ const rowSpacing = 70
 const colSpacing = 80
 const nodeSize = 32
 const maxSelectableSongs = 3
+const maxStars = 6
 
 function App() {
   const { acts, seed } = useMemo(() => generateRun(Date.now()), [])
@@ -103,59 +104,48 @@ function App() {
                 <>
                   <p className="eyebrow">Songs</p>
                   <ul>
-                    {selectedNode.challenge.songs.map((s, idx) => (
-                      <li key={`${s.id}-${s.title}`}>
-                        <label className="song-row">
-                          {phase === 'selecting' && (
-                            <input
-                              type="checkbox"
-                              checked={selectedSongs.some((sel) => sel.id === s.id)}
-                              onChange={() => toggleSongSelection(s)}
-                              disabled={
-                                !selectedSongs.some((sel) => sel.id === s.id) &&
-                                selectedSongs.length >= maxSelectableSongs
-                              }
+                    {(phase === 'selecting' ? selectedNode.challenge.songs : selectedSongs).map((s) => {
+                      const selectedIdx = selectedSongs.findIndex((sel) => sel.id === s.id)
+                      const isSelected = selectedIdx !== -1
+                      return (
+                        <li key={`${s.id}-${s.title}`}>
+                          <label className="song-row">
+                            {phase === 'selecting' && (
+                              <input
+                                type="checkbox"
+                                checked={isSelected}
+                                onChange={() => toggleSongSelection(s)}
+                                disabled={!isSelected && selectedSongs.length >= maxSelectableSongs}
+                              />
+                            )}
+                            <div>
+                              <strong>{s.title}</strong> — {s.artist}{' '}
+                              {s.year ? <span className="meta">({s.year})</span> : null}
+                              {s.genre ? <span className="meta"> • {s.genre}</span> : null}
+                              {s.length ? <span className="meta"> • {s.length}</span> : null}
+                              {s.difficulty ? (
+                                <span className="meta"> • diff {s.difficulty}/6</span>
+                              ) : null}
+                            </div>
+                          </label>
+                          {phase === 'entering' && isSelected ? (
+                            <StarPicker
+                              value={starEntries[selectedIdx]}
+                              onChange={(val) => updateStarEntry(selectedIdx, val)}
+                              max={maxStars}
                             />
-                          )}
-                          <div>
-                            <strong>{s.title}</strong> — {s.artist}{' '}
-                            {s.year ? <span className="meta">({s.year})</span> : null}
-                            {s.genre ? <span className="meta"> • {s.genre}</span> : null}
-                            {s.length ? <span className="meta"> • {s.length}</span> : null}
-                            {s.difficulty ? (
-                              <span className="meta"> • diff {s.difficulty}/6</span>
-                            ) : null}
-                          </div>
-                        </label>
-                        {phase === 'entering' && selectedSongs.find((sel) => sel.id === s.id) ? (
-                          <input
-                            className="star-input"
-                            type="number"
-                            min="0"
-                            max="6"
-                            value={starEntries[selectedSongs.findIndex((sel) => sel.id === s.id)] ?? ''}
-                            onChange={(e) =>
-                              updateStarEntry(
-                                selectedSongs.findIndex((sel) => sel.id === s.id),
-                                e.target.value,
-                              )
-                            }
-                          />
-                        ) : null}
-                        {phase === 'done' &&
-                        resultsKey(selected.act, selected.row) in results &&
-                        selectedSongs.find((sel) => sel.id === s.id) ? (
-                          <span className="meta">
-                            Stars:{' '}
-                            {
-                              results[resultsKey(selected.act, selected.row)].stars[
-                                selectedSongs.findIndex((sel) => sel.id === s.id)
-                              ]
-                            }
-                          </span>
-                        ) : null}
-                      </li>
-                    ))}
+                          ) : null}
+                          {phase === 'done' &&
+                          resultsKey(selected.act, selected.row) in results &&
+                          isSelected ? (
+                            <span className="meta">
+                              Stars:{' '}
+                              {results[resultsKey(selected.act, selected.row)].stars[selectedIdx]}
+                            </span>
+                          ) : null}
+                        </li>
+                      )
+                    })}
                   </ul>
                   {phase === 'selecting' && (
                     <button
@@ -363,6 +353,23 @@ function NodeView({ node, x, y, selected, reachable, onSelect }) {
       >
         {node.kind === 'boss' ? 'B' : 'C'}
       </div>
+    </div>
+  )
+}
+
+function StarPicker({ value, onChange, max }) {
+  return (
+    <div className="stars">
+      {Array.from({ length: max + 1 }).map((_, idx) => (
+        <button
+          key={idx}
+          className={`star ${value === idx ? 'star-active' : ''}`}
+          onClick={() => onChange(idx)}
+          type="button"
+        >
+          {idx}
+        </button>
+      ))}
     </div>
   )
 }

@@ -178,3 +178,24 @@ h1 {
 .meta {
   color: #94a3b8;
 }
+
+.stars {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.25rem;
+}
+
+.star {
+  background: #1f2937;
+  border: 1px solid #334155;
+  color: #e2e8f0;
+  padding: 0.15rem 0.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.star-active {
+  background: #22d3ee;
+  color: #0f172a;
+  border-color: #06b6d4;
+}
