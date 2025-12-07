@@ -12,6 +12,7 @@ func generateRun(seed int64, songs []song) []act {
 }
 
 func generateAct(index int, rng *rand.Rand, songs []song) act {
+	actSongs := applyActDifficultyConstraints(index, songs)
 	rows := make([][]node, rowsPerAct)
 	for row := 0; row < rowsPerAct; row++ {
 		count := minNodesPerRow + rng.Intn(maxNodesPerRow-minNodesPerRow+1)
@@ -20,7 +21,7 @@ func generateAct(index int, rng *rand.Rand, songs []song) act {
 			nodes[i] = node{
 				col:       i,
 				kind:      nodeChallenge,
-				challenge: newChallenge(songs, rng),
+				challenge: newChallenge(actSongs, rng),
 			}
 		}
 		if row > 0 {
@@ -67,4 +68,35 @@ func pickTargets(nextCount int, rng *rand.Rand) []int {
 		targets = append(targets, t)
 	}
 	return targets
+}
+
+func applyActDifficultyConstraints(actIndex int, songs []song) []song {
+	if len(songs) == 0 {
+		return songs
+	}
+
+	filtered := make([]song, 0, len(songs))
+	for _, s := range songs {
+		d := clampDifficulty(s.difficulty)
+
+		switch actIndex {
+		case 1:
+			if d <= 3 {
+				filtered = append(filtered, s)
+			}
+		case 2:
+			if d <= 5 {
+				filtered = append(filtered, s)
+			}
+		default:
+			if d >= 3 {
+				filtered = append(filtered, s)
+			}
+		}
+	}
+
+	if len(filtered) == 0 {
+		return songs
+	}
+	return filtered
 }

@@ -11,9 +11,9 @@ import (
 func TestGenerateRunCreatesChallengeNodes(t *testing.T) {
 	seed := int64(12345)
 	songs := []song{
-		{title: "Eye of the Tiger", artist: "Survivor", length: "4:05", seconds: 245, year: 1982},
-		{title: "Through the Fire and Flames", artist: "DragonForce", length: "7:24", seconds: 444, year: 2006},
-		{title: "Knights of Cydonia", artist: "Muse", length: "6:06", seconds: 366, year: 2006},
+		{title: "Eye of the Tiger", artist: "Survivor", length: "4:05", seconds: 245, year: 1982, difficulty: 3},
+		{title: "Through the Fire and Flames", artist: "DragonForce", length: "7:24", seconds: 444, year: 2006, difficulty: 6},
+		{title: "Knights of Cydonia", artist: "Muse", length: "6:06", seconds: 366, year: 2006, difficulty: 5},
 	}
 	acts := generateRun(seed, songs)
 
@@ -188,10 +188,10 @@ func TestLoadSongsReadsCSV(t *testing.T) {
 func TestNewDecadeChallengePicksSameDecade(t *testing.T) {
 	rng := rand.New(rand.NewSource(1))
 	songs := []song{
-		{title: "SongA", artist: "A", year: 1981},
-		{title: "SongB", artist: "B", year: 1982},
-		{title: "SongC", artist: "C", year: 1985},
-		{title: "Other", artist: "D", year: 1999},
+		{title: "SongA", artist: "A", year: 1981, difficulty: 2},
+		{title: "SongB", artist: "B", year: 1982, difficulty: 2},
+		{title: "SongC", artist: "C", year: 1985, difficulty: 2},
+		{title: "Other", artist: "D", year: 1999, difficulty: 2},
 	}
 
 	ch, ok := newDecadeChallenge(songs, rng)
@@ -211,10 +211,10 @@ func TestNewDecadeChallengePicksSameDecade(t *testing.T) {
 func TestNewLongSongChallengePicksLongTracks(t *testing.T) {
 	rng := rand.New(rand.NewSource(1))
 	songs := []song{
-		{title: "Short", seconds: 200},
-		{title: "LongA", seconds: 301},
-		{title: "LongB", seconds: 400},
-		{title: "LongC", seconds: 500},
+		{title: "Short", seconds: 200, difficulty: 2},
+		{title: "LongA", seconds: 301, difficulty: 2},
+		{title: "LongB", seconds: 400, difficulty: 2},
+		{title: "LongC", seconds: 500, difficulty: 2},
 	}
 
 	ch, ok := newLongSongChallenge(songs, rng)
@@ -234,10 +234,10 @@ func TestNewLongSongChallengePicksLongTracks(t *testing.T) {
 func TestNewGenreChallengeUsesSameGenre(t *testing.T) {
 	rng := rand.New(rand.NewSource(2))
 	songs := []song{
-		{title: "SongA", artist: "A", genre: "Rock"},
-		{title: "SongB", artist: "B", genre: "Rock"},
-		{title: "SongC", artist: "C", genre: "Rock"},
-		{title: "SongD", artist: "D", genre: "Pop"},
+		{title: "SongA", artist: "A", genre: "Rock", difficulty: 2},
+		{title: "SongB", artist: "B", genre: "Rock", difficulty: 2},
+		{title: "SongC", artist: "C", genre: "Rock", difficulty: 2},
+		{title: "SongD", artist: "D", genre: "Pop", difficulty: 2},
 	}
 
 	ch, ok := newGenreChallenge(songs, rng)
@@ -276,6 +276,35 @@ func TestNewDifficultyChallengeUsesTier(t *testing.T) {
 	for _, s := range ch.songs {
 		if s.difficulty != firstLevel {
 			t.Fatalf("mixed difficulty levels: %d vs %d", s.difficulty, firstLevel)
+		}
+	}
+}
+
+func TestApplyActDifficultyConstraints(t *testing.T) {
+	songs := []song{
+		{title: "Low", difficulty: 1},
+		{title: "Mid", difficulty: 3},
+		{title: "High", difficulty: 6},
+	}
+
+	act1 := applyActDifficultyConstraints(1, songs)
+	for _, s := range act1 {
+		if s.difficulty > 3 {
+			t.Fatalf("act1 contains high diff: %d", s.difficulty)
+		}
+	}
+
+	act2 := applyActDifficultyConstraints(2, songs)
+	for _, s := range act2 {
+		if s.difficulty > 5 {
+			t.Fatalf("act2 contains too high diff: %d", s.difficulty)
+		}
+	}
+
+	act3 := applyActDifficultyConstraints(3, songs)
+	for _, s := range act3 {
+		if s.difficulty < 3 {
+			t.Fatalf("act3 contains too low diff: %d", s.difficulty)
 		}
 	}
 }
