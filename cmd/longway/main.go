@@ -18,13 +18,29 @@ type model struct {
 }
 
 type node struct {
-	col   int
-	edges []int // indices into the next row
+	col       int
+	edges     []int // indices into the next row
+	kind      nodeKind
+	challenge *challenge
 }
 
 type act struct {
 	index int
 	rows  [][]node
+}
+
+type nodeKind int
+
+const (
+	nodeUnknown nodeKind = iota
+	nodeChallenge
+)
+
+type challenge struct {
+	id      string
+	name    string
+	song    string
+	summary string
 }
 
 const (
@@ -78,6 +94,7 @@ func (m model) View() string {
 		Render("Three-act rhythm roguelike — routes like Slay the Spire, resolved by rhythm.")
 
 	controls := "Controls: r rerolls the route • q quits"
+	legend := "Legend: C Challenge (TestChallenge: Eye of the Tiger)"
 
 	actViews := make([]string, 0, len(m.acts))
 	for _, a := range m.acts {
@@ -100,6 +117,7 @@ func (m model) View() string {
 		"",
 		bodyBox,
 		"",
+		legend,
 		controls,
 	)
 
@@ -125,7 +143,11 @@ func generateAct(index int, rng *rand.Rand) act {
 		count := minNodesPerRow + rng.Intn(maxNodesPerRow-minNodesPerRow+1)
 		nodes := make([]node, count)
 		for i := range nodes {
-			nodes[i] = node{col: i}
+			nodes[i] = node{
+				col:       i,
+				kind:      nodeChallenge,
+				challenge: newTestChallenge(),
+			}
 		}
 		if row > 0 {
 			connectRows(rows[row-1], nodes, rng)
@@ -136,6 +158,15 @@ func generateAct(index int, rng *rand.Rand) act {
 	return act{
 		index: index,
 		rows:  rows,
+	}
+}
+
+func newTestChallenge() *challenge {
+	return &challenge{
+		id:      "test-challenge",
+		name:    "TestChallenge",
+		song:    "Eye of the Tiger",
+		summary: "Play \"Eye of the Tiger\" to push through this encounter.",
 	}
 }
 
@@ -195,7 +226,7 @@ func renderAct(a act) string {
 		y := rowIdx * 2
 		for _, n := range row {
 			x := n.col * colSpacing
-			grid[y][x] = 'o'
+			grid[y][x] = nodeGlyph(n)
 			if rowIdx == len(a.rows)-1 {
 				continue
 			}
@@ -228,6 +259,15 @@ func renderAct(a act) string {
 
 	panel := lipgloss.JoinVertical(lipgloss.Left, append([]string{title}, lines...)...)
 	return panel
+}
+
+func nodeGlyph(n node) rune {
+	switch n.kind {
+	case nodeChallenge:
+		return 'C'
+	default:
+		return 'o'
+	}
 }
 
 func max(a, b int) int {
