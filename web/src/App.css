@@ -97,6 +97,11 @@ h1 {
   background: #f472b6;
 }
 
+.node-selected {
+  outline: 2px solid #22d3ee;
+  outline-offset: 2px;
+}
+
 .seed {
   margin-top: 0.75rem;
   color: #94a3b8;
