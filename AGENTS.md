@@ -10,6 +10,8 @@
 - Prefer composable Bubble Tea models over monoliths. Share styles and layout helpers instead of duplicating string builders.
 - Write small, purposeful commits; describe intent and behavior changes in commit messages.
 - Format with `gofmt`; avoid non-ASCII unless the file already uses it intentionally.
+- Every change should land with tests that cover the behavior; if a test cannot be written, call it out explicitly and explain why.
+- Once tests pass, create a commit. Keep the subject short, start with a present-tense verb, and use a longer body to explain the change and its motivation.
 
 ## Rhythm Integration
 - Treat rhythm execution as an external boundary: plan for adapters that can call out to YARG/Clone Hero chart/playback handlers.
