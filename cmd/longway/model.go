@@ -20,9 +20,10 @@ const (
 )
 
 const (
-	totalActs      = 3
-	rowsPerAct     = 8
-	minNodesPerRow = 2
-	maxNodesPerRow = 5
-	colSpacing     = 4
+	totalActs             = 3
+	rowsPerAct            = 8
+	minNodesPerRow        = 2
+	maxNodesPerRow        = 5
+	colSpacing            = 4
+	challengeSongListSize = 12
 )

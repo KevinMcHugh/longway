@@ -194,7 +194,7 @@ func TestNewDecadeChallengePicksSameDecade(t *testing.T) {
 		{title: "Other", artist: "D", year: 1999, difficulty: 2},
 	}
 
-	ch, ok := newDecadeChallenge(songs, rng)
+	ch, ok := newDecadeChallenge(songs, rng, challengeSongListSize)
 	if !ok {
 		t.Fatalf("expected decade challenge")
 	}
@@ -217,7 +217,7 @@ func TestNewLongSongChallengePicksLongTracks(t *testing.T) {
 		{title: "LongC", seconds: 500, difficulty: 2},
 	}
 
-	ch, ok := newLongSongChallenge(songs, rng)
+	ch, ok := newLongSongChallenge(songs, rng, challengeSongListSize)
 	if !ok {
 		t.Fatalf("expected long song challenge")
 	}
@@ -240,7 +240,7 @@ func TestNewGenreChallengeUsesSameGenre(t *testing.T) {
 		{title: "SongD", artist: "D", genre: "Pop", difficulty: 2},
 	}
 
-	ch, ok := newGenreChallenge(songs, rng)
+	ch, ok := newGenreChallenge(songs, rng, challengeSongListSize)
 	if !ok {
 		t.Fatalf("expected genre challenge")
 	}
@@ -264,7 +264,7 @@ func TestNewDifficultyChallengeUsesTier(t *testing.T) {
 		{title: "Lvl4", difficulty: 4},
 	}
 
-	ch, ok := newDifficultyChallenge(songs, rng)
+	ch, ok := newDifficultyChallenge(songs, rng, challengeSongListSize)
 	if !ok {
 		t.Fatalf("expected difficulty challenge")
 	}
@@ -306,5 +306,29 @@ func TestApplyActDifficultyConstraints(t *testing.T) {
 		if s.difficulty < 3 {
 			t.Fatalf("act3 contains too low diff: %d", s.difficulty)
 		}
+	}
+}
+
+func TestPickPoolSizePerAct(t *testing.T) {
+	rng := rand.New(rand.NewSource(5))
+
+	size1 := pickPoolSize(1, 20, rng)
+	if size1 < 9 || size1 > 12 {
+		t.Fatalf("act1 pool size out of range: %d", size1)
+	}
+
+	size2 := pickPoolSize(2, 20, rng)
+	if size2 < 6 || size2 > 9 {
+		t.Fatalf("act2 pool size out of range: %d", size2)
+	}
+
+	size3 := pickPoolSize(3, 20, rng)
+	if size3 < 3 || size3 > 5 {
+		t.Fatalf("act3 pool size out of range: %d", size3)
+	}
+
+	clamped := pickPoolSize(1, 5, rng)
+	if clamped != 5 {
+		t.Fatalf("pool size should clamp to available: got %d want 5", clamped)
 	}
 }

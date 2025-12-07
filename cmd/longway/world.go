@@ -13,6 +13,7 @@ func generateRun(seed int64, songs []song) []act {
 
 func generateAct(index int, rng *rand.Rand, songs []song) act {
 	actSongs := applyActDifficultyConstraints(index, songs)
+	poolSize := pickPoolSize(index, len(actSongs), rng)
 	rows := make([][]node, rowsPerAct)
 	for row := 0; row < rowsPerAct; row++ {
 		count := minNodesPerRow + rng.Intn(maxNodesPerRow-minNodesPerRow+1)
@@ -21,7 +22,7 @@ func generateAct(index int, rng *rand.Rand, songs []song) act {
 			nodes[i] = node{
 				col:       i,
 				kind:      nodeChallenge,
-				challenge: newChallenge(actSongs, rng),
+				challenge: newChallenge(actSongs, rng, poolSize),
 			}
 		}
 		if row > 0 {
@@ -99,4 +100,29 @@ func applyActDifficultyConstraints(actIndex int, songs []song) []song {
 		return songs
 	}
 	return filtered
+}
+
+func pickPoolSize(actIndex int, available int, rng *rand.Rand) int {
+	minSize, maxSize := poolBoundsForAct(actIndex)
+	if available < minSize {
+		return available
+	}
+	if available < maxSize {
+		maxSize = available
+	}
+	if minSize == maxSize {
+		return minSize
+	}
+	return minSize + rng.Intn(maxSize-minSize+1)
+}
+
+func poolBoundsForAct(actIndex int) (int, int) {
+	switch actIndex {
+	case 1:
+		return 9, 12
+	case 2:
+		return 6, 9
+	default:
+		return 3, 5
+	}
 }

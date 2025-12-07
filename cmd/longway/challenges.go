@@ -24,12 +24,8 @@ const (
 	challengeDifficulty
 )
 
-const (
-	challengeSongListSize = 12
-)
-
-func newChallenge(songs []song, rng *rand.Rand) *challenge {
-	creators := []func([]song, *rand.Rand) (*challenge, bool){
+func newChallenge(songs []song, rng *rand.Rand, poolSize int) *challenge {
+	creators := []func([]song, *rand.Rand, int) (*challenge, bool){
 		newDecadeChallenge,
 		newLongSongChallenge,
 		newGenreChallenge,
@@ -41,15 +37,15 @@ func newChallenge(songs []song, rng *rand.Rand) *challenge {
 	}
 
 	for _, idx := range rng.Perm(len(creators)) {
-		if c, ok := creators[idx](songs, rng); ok {
+		if c, ok := creators[idx](songs, rng, poolSize); ok {
 			return c
 		}
 	}
 
-	return newTestChallenge(songs)
+	return newTestChallenge(songs, poolSize)
 }
 
-func newDecadeChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+func newDecadeChallenge(songs []song, rng *rand.Rand, poolSize int) (*challenge, bool) {
 	byDecade := make(map[int][]song)
 	for _, s := range songs {
 		dec := decadeForYear(s.year)
@@ -72,7 +68,7 @@ func newDecadeChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 
 	decade := eligible[rng.Intn(len(eligible))]
 	pool := byDecade[decade]
-	selected := sampleSongs(pool, min(challengeSongListSize, len(pool)), rng)
+	selected := sampleSongs(pool, min(poolSize, len(pool)), rng)
 
 	summary := fmt.Sprintf("Pick any 3 of these %d tracks from the %ds.", len(selected), decade)
 
@@ -84,7 +80,7 @@ func newDecadeChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 	}, true
 }
 
-func newLongSongChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+func newLongSongChallenge(songs []song, rng *rand.Rand, poolSize int) (*challenge, bool) {
 	var longSongs []song
 	for _, s := range songs {
 		if s.seconds > 300 { // strictly over 5 minutes
@@ -96,7 +92,7 @@ func newLongSongChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 		return nil, false
 	}
 
-	selected := sampleSongs(longSongs, min(challengeSongListSize, len(longSongs)), rng)
+	selected := sampleSongs(longSongs, min(poolSize, len(longSongs)), rng)
 
 	return &challenge{
 		id:      "long-song",
@@ -106,7 +102,7 @@ func newLongSongChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 	}, true
 }
 
-func newGenreChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+func newGenreChallenge(songs []song, rng *rand.Rand, poolSize int) (*challenge, bool) {
 	byGenre := make(map[string][]song)
 	for _, s := range songs {
 		if s.genre == "" {
@@ -129,7 +125,7 @@ func newGenreChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 
 	genreKey := eligible[rng.Intn(len(eligible))]
 	pool := byGenre[genreKey]
-	selected := sampleSongs(pool, min(challengeSongListSize, len(pool)), rng)
+	selected := sampleSongs(pool, min(poolSize, len(pool)), rng)
 
 	label := strings.Title(genreKey)
 	return &challenge{
@@ -140,7 +136,7 @@ func newGenreChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 	}, true
 }
 
-func newDifficultyChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
+func newDifficultyChallenge(songs []song, rng *rand.Rand, poolSize int) (*challenge, bool) {
 	if len(songs) == 0 {
 		return nil, false
 	}
@@ -164,7 +160,7 @@ func newDifficultyChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 
 	level := eligible[rng.Intn(len(eligible))]
 	pool := buckets[level]
-	selected := sampleSongs(pool, min(challengeSongListSize, len(pool)), rng)
+	selected := sampleSongs(pool, min(poolSize, len(pool)), rng)
 
 	return &challenge{
 		id:      fmt.Sprintf("difficulty-%d", level),
@@ -174,7 +170,7 @@ func newDifficultyChallenge(songs []song, rng *rand.Rand) (*challenge, bool) {
 	}, true
 }
 
-func newTestChallenge(songs []song) *challenge {
+func newTestChallenge(songs []song, poolSize int) *challenge {
 	candidates := songs
 	if len(candidates) == 0 {
 		candidates = []song{fallbackSong()}
@@ -196,7 +192,7 @@ func newTestChallenge(songs []song) *challenge {
 		id:      "test-challenge",
 		name:    "TestChallenge",
 		summary: summary,
-		songs:   sampleSongs(candidates, min(challengeSongListSize, len(candidates)), rand.New(rand.NewSource(time.Now().UnixNano()))),
+		songs:   sampleSongs(candidates, min(poolSize, len(candidates)), rand.New(rand.NewSource(time.Now().UnixNano()))),
 	}
 }
 
@@ -218,19 +214,6 @@ func decadeForYear(year int) int {
 		return 0
 	}
 	return (year / 10) * 10
-}
-
-func difficultyTier(d int) string {
-	switch {
-	case d >= 6:
-		return "expert"
-	case d == 5:
-		return "hard"
-	case d == 3 || d == 4:
-		return "medium"
-	default:
-		return "easy"
-	}
 }
 
 func clampDifficulty(d int) int {
