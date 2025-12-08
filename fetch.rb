@@ -37,51 +37,28 @@ loop do
   page.each do |song|
     length_in_seconds = ((song['song_length'] || 0).to_f / 1000).round
     length_str = format("%02d:%02d", length_in_seconds / 60, length_in_seconds % 60)
-    diff_band = song['diff_band']
-    unless diff_band
-      diff_band = [
-        song['diff_guitar'],
-        song['diff_bass'],
-        song['diff_drums'],
-        song['diff_keys']
-      ].compact.max
-    end
-    diff_band = [[diff_band || 0, 0].max, 6].min
 
-    #  save all these fields
-# {
-#   "ordering": 1,
-#   "name": "Metropolis—Part I: \"The Miracle and the Sleeper\"",
-#   "artist": "Dream Theater",
-#   "album": "Images and Words",
-#   "genre": "Prog",
-#   "year": "1992",
-#   "md5": "9448c31dd5a3beb4c23e5eeaede4f8b3",
-#   "charter": "Harmonix",
-#   "song_length": 573997,
-#   "diff_band": 6,
-#   "diff_guitar": 6,
-#   "diff_guitar_coop": -1,
-#   "diff_rhythm": -1,
-#   "diff_bass": 6,
-#   "diff_drums": 6,
-#   "diff_drums_real": 6,
-#   "diff_keys": -1,
-#   "diff_vocals": 6,
-#   "album_track": 5,
-#   "playlist_track": 16000,
-#   "packName": "Rock Band 4",
-# }
     rows << {
       id: song['md5'] || song['id'] || "song-#{rows.length + 1}",
       title: song['name']&.strip,
       artist: song['artist']&.strip,
       album: song['album']&.strip,
       genre: song['genre']&.strip,
-      diff_band: diff_band,
+      diff_band: song['diff_band'],
+      diff_guitar: song['diff_guitar'],
+      diff_bass: song['diff_bass'],
+      diff_drums: song['diff_drums'],
+      diff_vocals: song['diff_vocals'],
+      diff_keys: song['diff_keys'],
+      diff_guitar_coop: song['diff_guitar_coop'],
+      diff_rhythm: song['diff_rhythm'],
+      ordering: song['ordering'],
+      album_track: song['album_track'],
+      playlist_track: song['playlist_track'],
+      origin: song['packName'],
       length: length_str,
-      year: song['year'],
       seconds: length_in_seconds,
+      year: song['year'],
     }
   end
   page_number += 1
@@ -89,7 +66,9 @@ end
 
 output = 'downloaded_songs.csv'
 CSV.open(output, 'w') do |csv|
-  csv << %w[id title artist album genre diff_band length year seconds]
+  csv << %w[id title artist album genre length seconds year 
+            diff_band diff_guitar diff_bass diff_drums diff_vocals diff_keys diff_guitar_coop diff_rhythm 
+            ordering album_track playlist_track origin length seconds year]
   rows.each do |row|
     csv << [
       row[:id],
@@ -97,10 +76,24 @@ CSV.open(output, 'w') do |csv|
       row[:artist],
       row[:album],
       row[:genre],
-      row[:diff_band],
       row[:length],
-      row[:year],
       row[:seconds],
+      row[:year],
+      row[:diff_band],
+      row[:diff_guitar],
+      row[:diff_bass],
+      row[:diff_drums],
+      row[:diff_vocals],
+      row[:diff_keys],
+      row[:diff_guitar_coop],
+      row[:diff_rhythm],
+      row[:ordering],
+      row[:album_track],
+      row[:playlist_track],
+      row[:origin],
+      row[:length],
+      row[:seconds],
+      row[:year]
     ]
   end
 end
