@@ -286,7 +286,7 @@ function parseSongs(csv) {
   const artistIdx = idx('artist')
   const albumIdx = idx('album')
   const genreIdx = idx('genre')
-  const difficultyIdx = idx('difficulty')
+  const difficultyIdx = idx('diff_band') !== -1 ? idx('diff_band') : idx('difficulty')
   const lengthIdx = idx('length')
   const yearIdx = idx('year')
   const secondsIdx = idx('seconds')

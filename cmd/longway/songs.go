@@ -129,7 +129,7 @@ func parseSong(rec []string, header map[string]int) (song, error) {
 		artist:     artist,
 		album:      album,
 		genre:      genre,
-		difficulty: parseDifficulty(get("difficulty", 5)),
+		difficulty: parseDifficulty(get("diff_band", 5)),
 		length:     length,
 		year:       parseYear(get("year", 7)),
 		seconds:    secondsVal,

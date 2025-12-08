@@ -159,7 +159,7 @@ func TestLoadSongsReadsCSV(t *testing.T) {
 func TestLoadSongsSupportsSecondsColumn(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "test.csv")
-	contents := "id,title,artist,album,genre,difficulty,length,year,seconds\n" +
+	contents := "id,title,artist,album,genre,diff_band,length,year,seconds\n" +
 		"id-1,Song One,Artist,Album,Rock,4,6:00,2000,360\n"
 	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
 		t.Fatalf("write temp csv: %v", err)

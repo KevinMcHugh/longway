@@ -1,4 +1,4 @@
-id,title,artist,album,genre,difficulty,length,year
+id,title,artist,album,genre,diff_band,length,year
 song-001,Eye of the Tiger,Survivor,Eye of the Tiger,Rock,3,4:05,1982
 song-002,Through the Fire and Flames,DragonForce,Inhuman Rampage,Metal,6,7:24,2006
 song-003,Knights of Cydonia,Muse,Black Holes and Revelations,Rock,5,6:06,2006
