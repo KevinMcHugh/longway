@@ -53,6 +53,21 @@ describe('path generation', () => {
     expect(exists).toBe(true)
   })
 
+  it('limits challenge pool sizes to 2-5 songs', () => {
+    const { acts } = generateRun(1234)
+    acts.forEach((act) => {
+      act.rows.forEach((row) => {
+        row.forEach((node) => {
+          if (node.kind === nodeKinds.boss) return
+          if (!node.challenge || !node.challenge.songs) return
+          const len = node.challenge.songs.length
+          expect(len).toBeGreaterThanOrEqual(2)
+          expect(len).toBeLessThanOrEqual(5)
+        })
+      })
+    })
+  })
+
   it('creates short/medium/epic challenges with duration bounds', () => {
     const rng = () => 0.5
     const pool = [

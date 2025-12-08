@@ -75,6 +75,7 @@ h1 {
 .pane.right {
   display: flex;
   flex-direction: column;
+  position: relative;
 }
 
 .acts {
@@ -244,6 +245,34 @@ h1 {
 .actions-bar .primary:disabled {
   opacity: 0.4;
   cursor: not-allowed;
+}
+
+.gameover {
+  position: absolute;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.8);
+  display: grid;
+  place-items: center;
+  z-index: 2;
+}
+
+.gameover-card {
+  background: #0b1222;
+  border: 1px solid #1e293b;
+  border-radius: 12px;
+  padding: 1.25rem;
+  width: min(340px, 90%);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  text-align: center;
+}
+
+.gameover-card h4 {
+  margin: 0 0 0.5rem 0;
+}
+
+.gameover-card p {
+  margin: 0 0 1rem 0;
+  color: #cbd5e1;
 }
 
 .stars {

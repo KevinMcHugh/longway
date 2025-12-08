@@ -33,6 +33,7 @@ function App() {
   const prevAct = useRef(currentAct)
   const [loadedFromStorage] = useState(Boolean(savedState))
   const [lastSaved, setLastSaved] = useState(savedState?.lastSaved ?? null)
+  const [gameOver, setGameOver] = useState(false)
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -63,9 +64,10 @@ function App() {
       starEntries,
       results: serializeResults(results),
       lastSaved: now,
+      gameOver,
     })
     setLastSaved(now)
-  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results])
+  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results, gameOver])
 
   const current = acts[currentAct]
   const selectedNode =
@@ -74,14 +76,17 @@ function App() {
     isReachable(selected, choices, current, currentRow, currentAct) && selected.row === currentRow
   const canAdvanceRow = phase === 'done' && currentRow < current.rows.length - 1
   const canAdvanceAct = phase === 'done' && currentRow === current.rows.length - 1 && currentAct < acts.length - 1
-  const action = actionForState({
-    phase,
-    hasSelection: selectedSongs.length > 0,
-    starsComplete: starsComplete(),
-    canAdvanceRow,
-    canAdvanceAct,
-    startEnabled,
-  })
+  const action =
+    gameOver && selectedNode?.kind !== 'boss'
+      ? null
+      : actionForState({
+          phase,
+          hasSelection: selectedSongs.length > 0,
+          starsComplete: starsComplete(),
+          canAdvanceRow,
+          canAdvanceAct,
+          startEnabled,
+        })
 
   return (
     <main className="app">
@@ -227,6 +232,17 @@ function App() {
               </button>
             ) : null}
           </div>
+          {gameOver ? (
+            <div className="gameover">
+              <div className="gameover-card">
+                <h4>Game Over</h4>
+                <p>You missed the goal. Start a new run to try again.</p>
+                <button className="primary" type="button" onClick={startNewRun}>
+                  New game
+                </button>
+              </div>
+            </div>
+          ) : null}
         </aside>
       </div>
     </main>
@@ -282,6 +298,10 @@ function App() {
         stars: starEntries.map((v) => Number(v)),
       },
     }))
+    if (!meetsGoal(selectedNode?.challenge?.goal, starEntries)) {
+      setGameOver(true)
+      return
+    }
     setPhase('done')
   }
 
@@ -314,6 +334,7 @@ function App() {
     setPhase('idle')
     setSelectedSongs([])
     setStarEntries([])
+    setGameOver(false)
   }
 }
 
@@ -495,6 +516,14 @@ export function actionForState({
     return { kind: 'advance', label: 'Advance', disabled: false }
   }
   return null
+}
+
+export function meetsGoal(goal, entries) {
+  if (!goal || !entries || !entries.length) return true
+  const nums = entries.map((n) => Number(n)).filter((n) => !Number.isNaN(n))
+  if (!nums.length) return true
+  const avg = nums.reduce((a, b) => a + b, 0) / nums.length
+  return avg >= goal
 }
 
 export function persistState(state) {

@@ -8,9 +8,9 @@ const minSelectable = 2
 const maxSelectable = 5
 
 const poolBounds = {
-  1: { min: 9, max: 12 },
-  2: { min: 6, max: 9 },
-  3: { min: 3, max: 5 },
+  1: { min: 2, max: 5 },
+  2: { min: 2, max: 5 },
+  3: { min: 2, max: 5 },
 }
 
 export const nodeKinds = {
@@ -184,9 +184,8 @@ function sample(pool, count, rng) {
 }
 
 function summaryForSongs(poolSize, suffix = '') {
-  const pickCount = Math.max(minSelectable, Math.min(maxSelectable, 3))
   const tail = suffix ? ` ${suffix}` : ''
-  return `Pick any ${pickCount} of these ${poolSize} tracks${tail}.`
+  return `Pick ${minSelectable}–${maxSelectable} of these ${poolSize} tracks${tail}.`
 }
 
 function actGoal(actIndex) {

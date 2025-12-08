@@ -9,6 +9,7 @@ import {
   isSongToggleAllowed,
   renderDifficulty,
   renderStars,
+  meetsGoal,
 } from './App'
 
 describe('song selection gating', () => {
@@ -162,5 +163,12 @@ describe('toggleSong', () => {
   it('caps at maxSelectable', () => {
     const res = toggleSong([songA, songB], { id: 'c' }, { minSelectable: 1, maxSelectable: 2 })
     expect(res).toEqual([songA, songB])
+  })
+})
+
+describe('meetsGoal', () => {
+  it('checks average against goal', () => {
+    expect(meetsGoal(3, [3, 3, 3])).toBe(true)
+    expect(meetsGoal(4, [3, 3, 3])).toBe(false)
   })
 })
