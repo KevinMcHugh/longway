@@ -25,7 +25,7 @@ rescue
   []
 end
 
-# Accumulate this into downloaded_songs.csv
+# Accumulate this into downloaded_songs.csv with normalized fields
 rows = []
 page_number = 1
 
@@ -34,15 +34,25 @@ loop do
   break if page.empty?
   puts "fetching page #{page_number} (#{page.length} songs)"
   page.each do |song|
-    length_in_seconds = (song['song_length'] || 0) / 1000
+    length_in_seconds = ((song['song_length'] || 0).to_f / 1000).round
+    length_str = format("%02d:%02d", length_in_seconds / 60, length_in_seconds % 60)
+    difficulty = [
+      song['diff_guitar'],
+      song['diff_bass'],
+      song['diff_drums'],
+      song['diff_keys']
+    ].compact.max || 0
+    difficulty = [[difficulty, 0].max, 6].min
+
     rows << {
-      id: song['md5'],
-      title: song['name'],
-      artist: song['artist'],
-      album: song['album'],
-      genre: song['genre'],
-      difficulty: song['diff_guitar'], #for now - we'll track across instruments soon enough
-      length_in_seconds: length_in_seconds,
+      id: song['md5'] || song['id'] || "song-#{rows.length + 1}",
+      title: song['name']&.strip,
+      artist: song['artist']&.strip,
+      album: song['album']&.strip,
+      genre: song['genre']&.strip,
+      difficulty: difficulty,
+      length: length_str,
+      seconds: length_in_seconds,
       year: song['year'],
     }
   end
@@ -50,9 +60,9 @@ loop do
 end
 
 CSV.open('downloaded_songs.csv', 'w') do |csv|
-  csv << %w[id title artist album genre difficulty length year]
+  csv << %w[id title artist album genre difficulty length seconds year]
   rows.each do |row|
-    csv << [row[:id], row[:title], row[:artist], row[:album], row[:genre], row[:difficulty], row[:length_in_seconds], row[:year]]
+    csv << [row[:id], row[:title], row[:artist], row[:album], row[:genre], row[:difficulty], row[:length], row[:seconds], row[:year]]
   end
 end
 
