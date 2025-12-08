@@ -35,12 +35,7 @@ function App() {
     <main className="app">
       <header className="header">
         <div>
-          <p className="eyebrow">Long Way To The Top</p>
-          <h1>Rhythm roguelike — React prototype</h1>
-          <p className="lede">
-            Hello! This is the starting point for the web client. We&apos;ll add sector maps,
-            challenge selection, and rhythm hooks here.
-          </p>
+          <h1>A Long Way To The Top</h1>
         </div>
         <div className="seed">Seed: {seed}</div>
       </header>
