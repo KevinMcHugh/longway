@@ -118,6 +118,9 @@ function App() {
               <p className="eyebrow">Challenge</p>
               <h3>{selectedNode.challenge?.name ?? 'Unknown'}</h3>
               <p className="lede">{selectedNode.challenge?.summary}</p>
+              {selectedNode.challenge?.goal ? (
+                <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+              ) : null}
 
               {phase !== 'idle' && selectedNode.challenge?.songs && (
                 <>

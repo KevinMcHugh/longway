@@ -76,4 +76,11 @@ describe('path generation', () => {
     const epic = epicSongChallenge(pool, 5, rng)
     expect(epic.songs.every((s) => s.seconds >= 420)).toBe(true)
   })
+
+  it('assigns goals per act', () => {
+    const { acts } = generateRun(7)
+    expect(acts[0].rows[0][0].challenge.goal).toBe(3)
+    expect(acts[1].rows[0][0].challenge.goal).toBe(4)
+    expect(acts[2].rows[0][0].challenge.goal).toBe(5)
+  })
 })

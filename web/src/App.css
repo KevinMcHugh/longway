@@ -43,6 +43,12 @@ h1 {
   line-height: 1.6;
 }
 
+.goal {
+  margin: 0;
+  color: #a5b4fc;
+  font-weight: 600;
+}
+
 .layout {
   flex: 1;
   display: grid;

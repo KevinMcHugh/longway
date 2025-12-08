@@ -56,7 +56,7 @@ function generateAct(index, rng) {
       nodes.push({
         col,
         kind: isBoss ? nodeKinds.boss : nodeKinds.challenge,
-        challenge: isBoss ? bossChallenge() : challenge(filteredSongs, poolSize, rng),
+        challenge: isBoss ? bossChallenge(index) : challenge(filteredSongs, poolSize, rng, index),
         edges: [],
       })
     }
@@ -127,7 +127,7 @@ function connectRows(prev, next, rng) {
   })
 }
 
-function challenge(pool, poolSize, rng) {
+function challenge(pool, poolSize, rng, actIndex) {
   const creators = [
     shortSongChallenge,
     mediumSongChallenge,
@@ -139,7 +139,7 @@ function challenge(pool, poolSize, rng) {
   ]
   const shuffled = shuffle(creators, rng)
   for (const fn of shuffled) {
-    const c = fn(pool, poolSize, rng)
+    const c = fn(pool, poolSize, rng, actIndex)
     if (c) return c
   }
   const songs = sample(pool, poolSize, rng)
@@ -147,15 +147,17 @@ function challenge(pool, poolSize, rng) {
     name: 'Challenge',
     summary: summaryForSongs(songs.length),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function bossChallenge() {
+function bossChallenge(actIndex) {
   const boss = catalog.find((s) => s.title === 'Bohemian Rhapsody') ?? catalog[0]
   return {
     name: 'Boss',
     summary: 'Final showdown: Bohemian Rhapsody.',
     songs: [boss],
+    goal: actGoal(actIndex),
   }
 }
 
@@ -187,14 +189,22 @@ function summaryForSongs(poolSize, suffix = '') {
   return `Pick any ${pickCount} of these ${poolSize} tracks${tail}.`
 }
 
+function actGoal(actIndex) {
+  if (actIndex === 1) return 3
+  if (actIndex === 2) return 4
+  if (actIndex === 3) return 5
+  return 5
+}
+
 // exports for tests
 export {
   shortSongChallenge,
   mediumSongChallenge,
   epicSongChallenge,
+  actGoal,
 }
 
-function decadeChallenge(pool, poolSize, rng) {
+function decadeChallenge(pool, poolSize, rng, actIndex) {
   const byDecade = pool.reduce((acc, s) => {
     if (!s.year) return acc
     const dec = Math.floor(s.year / 10) * 10
@@ -210,10 +220,11 @@ function decadeChallenge(pool, poolSize, rng) {
     name: 'DecadeChallenge',
     summary: summaryForSongs(songs.length, `from the ${decade}s`),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function difficultyChallenge(pool, poolSize, rng) {
+function difficultyChallenge(pool, poolSize, rng, actIndex) {
   const byLevel = pool.reduce((acc, s) => {
     const level = clampDifficulty(s.difficulty)
     acc[level] = acc[level] || []
@@ -228,10 +239,11 @@ function difficultyChallenge(pool, poolSize, rng) {
     name: 'DifficultyChallenge',
     summary: summaryForSongs(songs.length, `at difficulty ${level}`),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function genreChallenge(pool, poolSize, rng) {
+function genreChallenge(pool, poolSize, rng, actIndex) {
   const byGenre = pool.reduce((acc, s) => {
     if (!s.genre) return acc
     const key = s.genre.toLowerCase()
@@ -247,10 +259,11 @@ function genreChallenge(pool, poolSize, rng) {
     name: 'GenreChallenge',
     summary: summaryForSongs(songs.length, `${genre} tracks`),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function longSongChallenge(pool, poolSize, rng) {
+function longSongChallenge(pool, poolSize, rng, actIndex) {
   const longSongs = pool.filter((s) => s.seconds > 300)
   if (longSongs.length < 3) return null
   const songs = sample(longSongs, Math.min(poolSize, longSongs.length), rng)
@@ -258,10 +271,11 @@ function longSongChallenge(pool, poolSize, rng) {
     name: 'SongLengthChallenge',
     summary: summaryForSongs(songs.length, 'over 5 minutes'),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function shortSongChallenge(pool, poolSize, rng) {
+function shortSongChallenge(pool, poolSize, rng, actIndex) {
   const shorts = pool.filter((s) => s.seconds > 0 && s.seconds <= 150)
   if (shorts.length < 3) return null
   const songs = sample(shorts, Math.min(poolSize, shorts.length), rng)
@@ -269,10 +283,11 @@ function shortSongChallenge(pool, poolSize, rng) {
     name: 'ShortSongChallenge',
     summary: summaryForSongs(songs.length, 'under 2:30'),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function mediumSongChallenge(pool, poolSize, rng) {
+function mediumSongChallenge(pool, poolSize, rng, actIndex) {
   const mediums = pool.filter((s) => s.seconds > 150 && s.seconds < 300)
   if (mediums.length < 3) return null
   const songs = sample(mediums, Math.min(poolSize, mediums.length), rng)
@@ -280,10 +295,11 @@ function mediumSongChallenge(pool, poolSize, rng) {
     name: 'MediumSongChallenge',
     summary: summaryForSongs(songs.length, '2:31 – 4:59'),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
-function epicSongChallenge(pool, poolSize, rng) {
+function epicSongChallenge(pool, poolSize, rng, actIndex) {
   const epics = pool.filter((s) => s.seconds >= 420)
   if (epics.length < 3) return null
   const songs = sample(epics, Math.min(poolSize, epics.length), rng)
@@ -291,6 +307,7 @@ function epicSongChallenge(pool, poolSize, rng) {
     name: 'EpicSongChallenge',
     summary: summaryForSongs(songs.length, 'over 7 minutes'),
     songs,
+    goal: actGoal(actIndex),
   }
 }
 
