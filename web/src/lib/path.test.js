@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest'
-import { generateRun, nodeKinds, songs } from './path'
+import {
+  generateRun,
+  nodeKinds,
+  songs,
+  shortSongChallenge,
+  mediumSongChallenge,
+  epicSongChallenge,
+} from './path'
 
 describe('path generation', () => {
   it('places boss at the top row of each act and ensures connectivity', () => {
@@ -44,5 +51,29 @@ describe('path generation', () => {
     const anySongId = acts[0].rows[0][0].challenge.songs[0].id
     const exists = songs.some((s) => s.id === anySongId)
     expect(exists).toBe(true)
+  })
+
+  it('creates short/medium/epic challenges with duration bounds', () => {
+    const rng = () => 0.5
+    const pool = [
+      { id: 's1', seconds: 120 },
+      { id: 's2', seconds: 140 },
+      { id: 's3', seconds: 150 },
+      { id: 'm1', seconds: 170 },
+      { id: 'm2', seconds: 200 },
+      { id: 'm3', seconds: 250 },
+      { id: 'e1', seconds: 420 },
+      { id: 'e2', seconds: 500 },
+      { id: 'e3', seconds: 600 },
+    ]
+
+    const short = shortSongChallenge(pool, 5, rng)
+    expect(short.songs.every((s) => s.seconds <= 150)).toBe(true)
+
+    const medium = mediumSongChallenge(pool, 5, rng)
+    expect(medium.songs.every((s) => s.seconds > 150 && s.seconds < 300)).toBe(true)
+
+    const epic = epicSongChallenge(pool, 5, rng)
+    expect(epic.songs.every((s) => s.seconds >= 420)).toBe(true)
   })
 })

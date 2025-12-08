@@ -128,7 +128,15 @@ function connectRows(prev, next, rng) {
 }
 
 function challenge(pool, poolSize, rng) {
-  const creators = [decadeChallenge, difficultyChallenge, genreChallenge, longSongChallenge]
+  const creators = [
+    shortSongChallenge,
+    mediumSongChallenge,
+    epicSongChallenge,
+    longSongChallenge,
+    decadeChallenge,
+    difficultyChallenge,
+    genreChallenge,
+  ]
   const shuffled = shuffle(creators, rng)
   for (const fn of shuffled) {
     const c = fn(pool, poolSize, rng)
@@ -177,6 +185,13 @@ function summaryForSongs(poolSize, suffix = '') {
   const pickCount = Math.max(minSelectable, Math.min(maxSelectable, 3))
   const tail = suffix ? ` ${suffix}` : ''
   return `Pick any ${pickCount} of these ${poolSize} tracks${tail}.`
+}
+
+// exports for tests
+export {
+  shortSongChallenge,
+  mediumSongChallenge,
+  epicSongChallenge,
 }
 
 function decadeChallenge(pool, poolSize, rng) {
@@ -242,6 +257,39 @@ function longSongChallenge(pool, poolSize, rng) {
   return {
     name: 'SongLengthChallenge',
     summary: summaryForSongs(songs.length, 'over 5 minutes'),
+    songs,
+  }
+}
+
+function shortSongChallenge(pool, poolSize, rng) {
+  const shorts = pool.filter((s) => s.seconds > 0 && s.seconds <= 150)
+  if (shorts.length < 3) return null
+  const songs = sample(shorts, Math.min(poolSize, shorts.length), rng)
+  return {
+    name: 'ShortSongChallenge',
+    summary: summaryForSongs(songs.length, 'under 2:30'),
+    songs,
+  }
+}
+
+function mediumSongChallenge(pool, poolSize, rng) {
+  const mediums = pool.filter((s) => s.seconds > 150 && s.seconds < 300)
+  if (mediums.length < 3) return null
+  const songs = sample(mediums, Math.min(poolSize, mediums.length), rng)
+  return {
+    name: 'MediumSongChallenge',
+    summary: summaryForSongs(songs.length, '2:31 – 4:59'),
+    songs,
+  }
+}
+
+function epicSongChallenge(pool, poolSize, rng) {
+  const epics = pool.filter((s) => s.seconds >= 420)
+  if (epics.length < 3) return null
+  const songs = sample(epics, Math.min(poolSize, epics.length), rng)
+  return {
+    name: 'EpicSongChallenge',
+    summary: summaryForSongs(songs.length, 'over 7 minutes'),
     songs,
   }
 }
