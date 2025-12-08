@@ -383,16 +383,23 @@ function shuffle(arr, rng) {
 function parseSongs(csv) {
   const lines = csv.trim().split('\n')
   const header = lines.shift().split(',')
-  const idx = (key) => header.indexOf(key)
-  const idIdx = idx('id')
-  const titleIdx = idx('title')
-  const artistIdx = idx('artist')
-  const albumIdx = idx('album')
-  const genreIdx = idx('genre')
-  const difficultyIdx = idx('diff_band') !== -1 ? idx('diff_band') : idx('difficulty')
-  const lengthIdx = idx('length')
-  const yearIdx = idx('year')
-  const secondsIdx = idx('seconds')
+  const lastIdx = (key) => findLastIndex(header, key)
+  const idIdx = lastIdx('id')
+  const titleIdx = lastIdx('title')
+  const artistIdx = lastIdx('artist')
+  const albumIdx = lastIdx('album')
+  const genreIdx = lastIdx('genre')
+  const difficultyIdx = lastIdx('diff_band') !== -1 ? lastIdx('diff_band') : lastIdx('difficulty')
+  const lengthIdx = lastIdx('length')
+  const yearIdx = lastIdx('year')
+  const secondsIdx = lastIdx('seconds')
+  const originIdx = lastIdx('origin')
+  const diffGuitarIdx = lastIdx('diff_guitar')
+  const diffBassIdx = lastIdx('diff_bass')
+  const diffDrumsIdx = lastIdx('diff_drums')
+  const diffVocalsIdx = lastIdx('diff_vocals')
+  const diffKeysIdx = lastIdx('diff_keys')
+  const diffRhythmIdx = lastIdx('diff_rhythm')
 
   return lines
     .map((line) => {
@@ -414,9 +421,25 @@ function parseSongs(csv) {
         length,
         year: Number(clean(cols[yearIdx])) || undefined,
         seconds,
+        origin: clean(cols[originIdx]),
+        diff_guitar: clampDifficulty(Number(clean(cols[diffGuitarIdx]))),
+        diff_bass: clampDifficulty(Number(clean(cols[diffBassIdx]))),
+        diff_drums: clampDifficulty(Number(clean(cols[diffDrumsIdx]))),
+        diff_vocals: clampDifficulty(Number(clean(cols[diffVocalsIdx]))),
+        diff_keys: clampDifficulty(Number(clean(cols[diffKeysIdx]))),
+        diff_rhythm: clampDifficulty(Number(clean(cols[diffRhythmIdx]))),
       }
     })
     .filter((s) => s.title)
+}
+
+function findLastIndex(arr, key) {
+  const target = key.toLowerCase()
+  let idx = -1
+  arr.forEach((val, i) => {
+    if (val.toLowerCase() === target) idx = i
+  })
+  return idx
 }
 
 function parseSeconds(len) {

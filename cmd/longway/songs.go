@@ -19,6 +19,14 @@ type song struct {
 	length     string
 	year       int
 	seconds    int
+	origin     string
+	diffGuitar int
+	diffBass   int
+	diffDrums  int
+	diffVocals int
+	diffKeys   int
+	diffRhythm int
+	diffCoop   int
 }
 
 func loadSongs(path string) ([]song, error) {
@@ -133,6 +141,14 @@ func parseSong(rec []string, header map[string]int) (song, error) {
 		length:     length,
 		year:       parseYear(get("year", 7)),
 		seconds:    secondsVal,
+		origin:     get("origin", -1),
+		diffGuitar: parseDifficulty(get("diff_guitar", -1)),
+		diffBass:   parseDifficulty(get("diff_bass", -1)),
+		diffDrums:  parseDifficulty(get("diff_drums", -1)),
+		diffVocals: parseDifficulty(get("diff_vocals", -1)),
+		diffKeys:   parseDifficulty(get("diff_keys", -1)),
+		diffRhythm: parseDifficulty(get("diff_rhythm", -1)),
+		diffCoop:   parseDifficulty(get("diff_guitar_coop", -1)),
 	}, nil
 }
 

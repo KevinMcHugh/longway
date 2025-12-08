@@ -159,8 +159,8 @@ func TestLoadSongsReadsCSV(t *testing.T) {
 func TestLoadSongsSupportsSecondsColumn(t *testing.T) {
 	dir := t.TempDir()
 	path := filepath.Join(dir, "test.csv")
-	contents := "id,title,artist,album,genre,diff_band,length,year,seconds\n" +
-		"id-1,Song One,Artist,Album,Rock,4,6:00,2000,360\n"
+	contents := "id,title,artist,album,genre,diff_band,length,year,seconds,origin,diff_guitar\n" +
+		"id-1,Song One,Artist,Album,Rock,4,6:00,2000,360,Pack A,5\n"
 	if err := os.WriteFile(path, []byte(contents), 0o644); err != nil {
 		t.Fatalf("write temp csv: %v", err)
 	}
@@ -177,6 +177,12 @@ func TestLoadSongsSupportsSecondsColumn(t *testing.T) {
 	}
 	if songs[0].length != "6:00" {
 		t.Fatalf("expected length to be preserved, got %s", songs[0].length)
+	}
+	if songs[0].origin != "Pack A" {
+		t.Fatalf("expected origin to parse")
+	}
+	if songs[0].diffGuitar != 5 {
+		t.Fatalf("expected diffGuitar=5, got %d", songs[0].diffGuitar)
 	}
 }
 
