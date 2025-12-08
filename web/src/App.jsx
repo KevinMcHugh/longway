@@ -28,6 +28,8 @@ function App() {
   const [starEntries, setStarEntries] = useState(savedState?.starEntries ?? [])
   const [results, setResults] = useState(() => restoreResults(savedState?.results))
   const hydrated = useRef(false)
+  const [loadedFromStorage] = useState(Boolean(savedState))
+  const [lastSaved, setLastSaved] = useState(savedState?.lastSaved ?? null)
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -42,6 +44,7 @@ function App() {
   }, [currentAct])
 
   useEffect(() => {
+    const now = Date.now()
     persistState({
       seed,
       currentAct,
@@ -52,7 +55,9 @@ function App() {
       selectedSongIds: selectedSongs.map((s) => s.id),
       starEntries,
       results: serializeResults(results),
+      lastSaved: now,
     })
+    setLastSaved(now)
   }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results])
 
   const current = acts[currentAct]
@@ -77,7 +82,13 @@ function App() {
         <div>
           <h1>A Long Way To The Top</h1>
         </div>
-        <div className="seed">Seed: {seed}</div>
+        <div className="seed">
+          <div>Seed: {seed}</div>
+          <div className="autosave">
+            Autosave: {loadedFromStorage ? 'resumed' : 'new run'}
+            {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
+          </div>
+        </div>
       </header>
 
       <div className="layout">

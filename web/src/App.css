@@ -139,6 +139,12 @@ h1 {
 
 .seed {
   color: #94a3b8;
+  text-align: right;
+}
+
+.autosave {
+  font-size: 0.85rem;
+  color: #64748b;
 }
 
 .controls {
