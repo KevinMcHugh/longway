@@ -30,6 +30,15 @@ function App() {
   const current = acts[currentAct]
   const selectedNode =
     current?.rows[selected.row]?.find((n) => n.col === selected.col) ?? current?.rows[0]?.[0]
+  const startEnabled =
+    isReachable(selected, choices, current, currentRow, currentAct) && selected.row === currentRow
+  const action = actionForState({
+    phase,
+    hasSelection: selectedSongs.length > 0,
+    starsComplete: starsComplete(),
+    canAdvance: phase === 'done' && currentRow < current.rows.length - 1,
+    startEnabled,
+  })
 
   return (
     <main className="app">
@@ -60,19 +69,6 @@ function App() {
               <p className="eyebrow">Challenge</p>
               <h3>{selectedNode.challenge?.name ?? 'Unknown'}</h3>
               <p className="lede">{selectedNode.challenge?.summary}</p>
-              <div className="actions">
-                {phase === 'idle' && (
-                  <button
-                    onClick={startChallenge}
-                    disabled={
-                      !isReachable(selected, choices, current, currentRow, currentAct) ||
-                      selected.row !== currentRow
-                    }
-                  >
-                    Start challenge
-                  </button>
-                )}
-              </div>
 
               {phase !== 'idle' && selectedNode.challenge?.songs && (
                 <>
@@ -134,32 +130,40 @@ function App() {
                       )
                     })}
                   </ul>
-                  {phase === 'selecting' && (
-                    <button
-                      onClick={() => setPhase('entering')}
-                      disabled={selectedSongs.length === 0}
-                    >
-                      Enter stars
-                    </button>
-                  )}
                 </>
-              )}
-              {phase === 'entering' && (
-                <div className="actions">
-                  <button onClick={submitStars} disabled={!starsComplete()}>
-                    Submit results
-                  </button>
-                </div>
-              )}
-              {phase === 'done' && currentRow < current.rows.length - 1 && (
-                <div className="actions">
-                  <button onClick={advanceRow}>Advance</button>
-                </div>
               )}
             </div>
           ) : (
             <p className="lede">Select a node to see details.</p>
           )}
+          <div className="actions-bar">
+            {action ? (
+              <button
+                className="primary"
+                onClick={() => {
+                  switch (action.kind) {
+                    case 'start':
+                      startChallenge()
+                      break
+                    case 'enter':
+                      setPhase('entering')
+                      break
+                    case 'submit':
+                      submitStars()
+                      break
+                    case 'advance':
+                      advanceRow()
+                      break
+                    default:
+                      break
+                  }
+                }}
+                disabled={action.disabled}
+              >
+                {action.label}
+              </button>
+            ) : null}
+          </div>
         </aside>
       </div>
     </main>
@@ -378,4 +382,20 @@ export function renderStars(count) {
   const clamped = Math.max(0, Math.min(maxStars, Math.round(count || 0)))
   if (clamped === 0) return '—'
   return '⭐️'.repeat(clamped)
+}
+
+export function actionForState({ phase, hasSelection, starsComplete, canAdvance, startEnabled }) {
+  if (phase === 'idle') {
+    return { kind: 'start', label: 'Start challenge', disabled: !startEnabled }
+  }
+  if (phase === 'selecting') {
+    return { kind: 'enter', label: 'Enter stars', disabled: !hasSelection }
+  }
+  if (phase === 'entering') {
+    return { kind: 'submit', label: 'Submit results', disabled: !starsComplete }
+  }
+  if (phase === 'done' && canAdvance) {
+    return { kind: 'advance', label: 'Advance', disabled: false }
+  }
+  return null
 }

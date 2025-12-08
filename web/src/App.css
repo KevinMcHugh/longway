@@ -60,6 +60,11 @@ h1 {
   overflow: hidden;
 }
 
+.pane.right {
+  display: flex;
+  flex-direction: column;
+}
+
 .acts {
   height: calc(100% - 48px);
 }
@@ -162,6 +167,8 @@ h1 {
   flex-direction: column;
   gap: 0.5rem;
   font-size: 0.9rem;
+  flex: 1;
+  overflow-y: auto;
 }
 
 .details ul {
@@ -178,6 +185,33 @@ h1 {
 
 .meta {
   color: #94a3b8;
+}
+
+.actions-bar {
+  border-top: 1px solid #1e293b;
+  padding-top: 0.75rem;
+  margin-top: 0.5rem;
+  min-height: 10%;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.5rem;
+}
+
+.actions-bar .primary {
+  background: #22d3ee;
+  color: #0f172a;
+  border: none;
+  padding: 0.65rem 1rem;
+  border-radius: 10px;
+  font-weight: 700;
+  cursor: pointer;
+  min-width: 140px;
+}
+
+.actions-bar .primary:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .stars {

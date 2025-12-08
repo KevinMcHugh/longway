@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { isSongToggleAllowed, renderDifficulty, renderStars } from './App'
+import { actionForState, isSongToggleAllowed, renderDifficulty, renderStars } from './App'
 
 describe('song selection gating', () => {
   it('disables toggling once selecting phase ends', () => {
@@ -38,5 +38,22 @@ describe('renderStars', () => {
 
   it('renders dash for zero', () => {
     expect(renderStars(0)).toBe('—')
+  })
+})
+
+describe('actionForState', () => {
+  it('surfaces the right labels and disabled states', () => {
+    expect(
+      actionForState({ phase: 'idle', startEnabled: true, hasSelection: false, starsComplete: false, canAdvance: false }),
+    ).toEqual({ kind: 'start', label: 'Start challenge', disabled: false })
+    expect(
+      actionForState({ phase: 'selecting', hasSelection: false, startEnabled: true, starsComplete: false, canAdvance: false }),
+    ).toMatchObject({ kind: 'enter', disabled: true })
+    expect(
+      actionForState({ phase: 'entering', starsComplete: false, hasSelection: true, startEnabled: true, canAdvance: false }),
+    ).toMatchObject({ kind: 'submit', disabled: true })
+    expect(
+      actionForState({ phase: 'done', canAdvance: true, hasSelection: true, starsComplete: true, startEnabled: false }),
+    ).toMatchObject({ kind: 'advance', disabled: false })
   })
 })
