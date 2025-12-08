@@ -161,12 +161,19 @@ function App() {
                       Enter stars
                     </button>
                   )}
-                  {phase === 'entering' && (
-                    <button onClick={submitStars} disabled={!starsComplete()}>
-                      Submit results
-                    </button>
-                  )}
                 </>
+              )}
+              {phase === 'entering' && (
+                <div className="actions">
+                  <button onClick={submitStars} disabled={!starsComplete()}>
+                    Submit results
+                  </button>
+                </div>
+              )}
+              {phase === 'done' && currentRow < current.rows.length - 1 && (
+                <div className="actions">
+                  <button onClick={advanceRow}>Advance</button>
+                </div>
               )}
             </div>
           ) : (
