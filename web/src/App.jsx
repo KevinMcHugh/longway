@@ -7,12 +7,22 @@ const colSpacing = 80
 const nodeSize = 32
 const maxStars = 6
 const STORAGE_KEY = 'longway-save-v1'
+const instruments = [
+  { value: 'band', label: 'Band' },
+  { value: 'guitar', label: 'Guitar' },
+  { value: 'bass', label: 'Bass' },
+  { value: 'drums', label: 'Drums' },
+  { value: 'vocals', label: 'Vocals' },
+  { value: 'keys', label: 'Keys' },
+  { value: 'rhythm', label: 'Rhythm' },
+]
 
 function App() {
   const savedState = useMemo(() => readSavedState(), [])
   const initialSeed = savedState?.seed ?? Date.now()
   const [seed, setSeed] = useState(initialSeed)
-  const { acts } = useMemo(() => generateRun(seed), [seed])
+  const [instrument, setInstrument] = useState(savedState?.instrument ?? 'band')
+  const { acts } = useMemo(() => generateRun(seed, instrument), [seed, instrument])
   const [currentAct, setCurrentAct] = useState(savedState?.currentAct ?? 0)
   const [selected, setSelected] = useState(
     clampSelection(savedState?.selected ?? { act: 0, row: 0, col: 0 }, acts),
@@ -63,9 +73,10 @@ function App() {
       results: serializeResults(results),
       lastSaved: now,
       gameOver,
+      instrument,
     })
     setLastSaved(now)
-  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results, gameOver])
+  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results, gameOver, instrument])
 
   const current = acts[currentAct]
   const selectedNode =
@@ -104,6 +115,16 @@ function App() {
             </div>
           </div>
           <div className="options">
+            <label className="select-label">
+              Instrument
+              <select value={instrument} onChange={(e) => handleInstrumentChange(e.target.value)}>
+                {instruments.map((opt) => (
+                  <option key={opt.value} value={opt.value}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+            </label>
             <button className="ghost" type="button" onClick={startNewRun}>
               New game
             </button>
@@ -342,6 +363,11 @@ function App() {
     setSelectedSongs([])
     setStarEntries([])
     setGameOver(false)
+  }
+
+  function handleInstrumentChange(value) {
+    setInstrument(value)
+    startNewRun()
   }
 }
 
