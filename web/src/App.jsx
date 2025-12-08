@@ -81,13 +81,19 @@ function App() {
                     {(phase === 'selecting' ? selectedNode.challenge.songs : selectedSongs).map((s) => {
                       const selectedIdx = selectedSongs.findIndex((sel) => sel.id === s.id)
                       const isSelected = selectedIdx !== -1
+                      const toggleAllowed = isSongToggleAllowed(
+                        phase,
+                        isSelected,
+                        selectedSongs.length,
+                        maxSelectableSongs,
+                      )
                       return (
                         <li key={`${s.id}-${s.title}`}>
                           <button
                             type="button"
                             className={`song-row ${isSelected ? 'song-row-selected' : ''}`}
-                            onClick={() => toggleSongSelection(s)}
-                            disabled={!isSelected && selectedSongs.length >= maxSelectableSongs}
+                            onClick={toggleAllowed ? () => toggleSongSelection(s) : undefined}
+                            disabled={!toggleAllowed}
                           >
                             {phase === 'selecting' && (
                               <span className="checkbox">{isSelected ? '✓' : ''}</span>
@@ -102,7 +108,7 @@ function App() {
                                   {s.genre ? <span className="meta">{s.genre}</span> : null}
                                   {s.length ? <span className="meta"> • {s.length}</span> : null}
                                   {s.difficulty ? (
-                                    <span className="meta"> • {renderStars(s.difficulty)}</span>
+                                    <span className="meta"> • {renderDifficulty(s.difficulty)}</span>
                                   ) : null}
                                 </span>
                               </div>
@@ -352,8 +358,17 @@ function StarPicker({ value, onChange, max }) {
   )
 }
 
-function renderStars(count) {
-  return '⭐️'.repeat(Math.max(1, Math.min(6, Math.round(count))))
+export default App
+
+export function isSongToggleAllowed(phase, isSelected, selectedCount, maxSelectable) {
+  if (phase !== 'selecting') return false
+  if (isSelected) return true
+  return selectedCount < maxSelectable
 }
 
-export default App
+export function renderDifficulty(level) {
+  const clamped = Math.max(0, Math.min(6, Math.round(level)))
+  if (clamped >= 6) return '🔥'
+  if (clamped <= 0) return '•'
+  return '🔴'.repeat(clamped)
+}
