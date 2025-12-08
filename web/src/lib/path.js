@@ -211,6 +211,8 @@ export {
   mediumSongChallenge,
   epicSongChallenge,
   actGoal,
+  pickSelectCount,
+  clampSelectCount,
 }
 
 function decadeChallenge(pool, poolSize, rng, actIndex, selectCount) {
@@ -480,5 +482,3 @@ function ensureBoss(list) {
     },
   ]
 }
-
-export { pickSelectCount, clampSelectCount, shortSongChallenge, mediumSongChallenge, epicSongChallenge }
