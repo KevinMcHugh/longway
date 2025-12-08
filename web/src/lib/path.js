@@ -1,4 +1,4 @@
-import { songs as catalog } from '../data/songs.js'
+import songsCsv from '../data/downloaded_songs.csv?raw'
 
 const totalActs = 3
 const rowsPerAct = 8
@@ -15,6 +15,9 @@ export const nodeKinds = {
   challenge: 'challenge',
   boss: 'boss',
 }
+
+const catalog = ensureBoss(parseSongs(songsCsv))
+export const songs = catalog
 
 export function generateRun(seed = Date.now()) {
   const rng = mulberry32(seed)
@@ -101,6 +104,12 @@ function connectRows(prev, next, rng) {
 }
 
 function challenge(pool, poolSize, rng) {
+  const creators = [decadeChallenge, difficultyChallenge, genreChallenge, longSongChallenge]
+  const shuffled = shuffle(creators, rng)
+  for (const fn of shuffled) {
+    const c = fn(pool, poolSize, rng)
+    if (c) return c
+  }
   const songs = sample(pool, poolSize, rng)
   return {
     name: 'Challenge',
@@ -140,6 +149,73 @@ function sample(pool, count, rng) {
   return indices.map((i) => pool[i])
 }
 
+function decadeChallenge(pool, poolSize, rng) {
+  const byDecade = pool.reduce((acc, s) => {
+    if (!s.year) return acc
+    const dec = Math.floor(s.year / 10) * 10
+    acc[dec] = acc[dec] || []
+    acc[dec].push(s)
+    return acc
+  }, {})
+  const eligible = Object.entries(byDecade).filter(([, list]) => list.length >= 3)
+  if (!eligible.length) return null
+  const [decade, list] = eligible[rngInt(rng, eligible.length)]
+  const songs = sample(list, Math.min(poolSize, list.length), rng)
+  return {
+    name: 'DecadeChallenge',
+    summary: `Pick any 3 of these ${songs.length} tracks from the ${decade}s.`,
+    songs,
+  }
+}
+
+function difficultyChallenge(pool, poolSize, rng) {
+  const byLevel = pool.reduce((acc, s) => {
+    const level = clampDifficulty(s.difficulty)
+    acc[level] = acc[level] || []
+    acc[level].push(s)
+    return acc
+  }, {})
+  const eligible = Object.entries(byLevel).filter(([, list]) => list.length >= 3)
+  if (!eligible.length) return null
+  const [level, list] = eligible[rngInt(rng, eligible.length)]
+  const songs = sample(list, Math.min(poolSize, list.length), rng)
+  return {
+    name: 'DifficultyChallenge',
+    summary: `Pick any 3 of these ${songs.length} difficulty ${level} tracks.`,
+    songs,
+  }
+}
+
+function genreChallenge(pool, poolSize, rng) {
+  const byGenre = pool.reduce((acc, s) => {
+    if (!s.genre) return acc
+    const key = s.genre.toLowerCase()
+    acc[key] = acc[key] || []
+    acc[key].push(s)
+    return acc
+  }, {})
+  const eligible = Object.entries(byGenre).filter(([, list]) => list.length >= 3)
+  if (!eligible.length) return null
+  const [genre, list] = eligible[rngInt(rng, eligible.length)]
+  const songs = sample(list, Math.min(poolSize, list.length), rng)
+  return {
+    name: 'GenreChallenge',
+    summary: `Pick any 3 of these ${songs.length} ${genre} tracks.`,
+    songs,
+  }
+}
+
+function longSongChallenge(pool, poolSize, rng) {
+  const longSongs = pool.filter((s) => s.seconds > 300)
+  if (longSongs.length < 3) return null
+  const songs = sample(longSongs, Math.min(poolSize, longSongs.length), rng)
+  return {
+    name: 'SongLengthChallenge',
+    summary: `Pick any 3 of these ${songs.length} long tracks (over 5 minutes).`,
+    songs,
+  }
+}
+
 function pickDistinct(size, count, rng, existing = new Set()) {
   const seen = new Set()
   existing.forEach((v) => seen.add(v))
@@ -168,4 +244,67 @@ function mulberry32(seed) {
     t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
     return ((t ^ (t >>> 14)) >>> 0) / 4294967296
   }
+}
+
+function shuffle(arr, rng) {
+  const a = [...arr]
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(rng() * (i + 1))
+    ;[a[i], a[j]] = [a[j], a[i]]
+  }
+  return a
+}
+
+function parseSongs(csv) {
+  const lines = csv.trim().split('\n')
+  const header = lines.shift().split(',')
+  const idx = (key) => header.indexOf(key)
+  return lines
+    .map((line) => {
+      const cols = line.split(',')
+      const clean = (str) => (str || '').replace(/^"+|"+$/g, '').replace(/""/g, '"').trim()
+      return {
+        id: clean(cols[idx('id')]) || `${Math.random()}`,
+        title: clean(cols[idx('title')]),
+        artist: clean(cols[idx('artist')]),
+        album: clean(cols[idx('album')]),
+        genre: clean(cols[idx('genre')]),
+        difficulty: clampDifficulty(Number(cols[idx('difficulty')])),
+        length: clean(cols[idx('length')]),
+        year: Number(clean(cols[idx('year')])) || undefined,
+        seconds: parseSeconds(clean(cols[idx('length')])),
+      }
+    })
+    .filter((s) => s.title)
+}
+
+function parseSeconds(len) {
+  if (!len) return 0
+  const [m, s] = len.split(':').map(Number)
+  if (Number.isNaN(m) || Number.isNaN(s)) return 0
+  return m * 60 + s
+}
+
+function clampDifficulty(d) {
+  if (Number.isNaN(d)) return 0
+  return Math.max(0, Math.min(6, d))
+}
+
+function ensureBoss(list) {
+  const exists = list.some((s) => s.title?.toLowerCase() === 'bohemian rhapsody')
+  if (exists) return list
+  return [
+    ...list,
+    {
+      id: 'boss-bohemian',
+      title: 'Bohemian Rhapsody',
+      artist: 'Queen',
+      album: 'A Night at the Opera',
+      genre: 'Classic Rock',
+      difficulty: 5,
+      length: '5:55',
+      seconds: 355,
+      year: 1975,
+    },
+  ]
 }

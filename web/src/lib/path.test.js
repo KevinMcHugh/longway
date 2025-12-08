@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { generateRun, nodeKinds } from './path'
-import { songs } from '../data/songs'
+import { generateRun, nodeKinds, songs } from './path'
 
 describe('path generation', () => {
   it('places boss at the top row of each act and ensures connectivity', () => {
