@@ -5,7 +5,8 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 const rowSpacing = 70
 const colSpacing = 80
 const nodeSize = 32
-const maxSelectableSongs = 3
+const minSelectableSongs = 2
+const maxSelectableSongs = 5
 const maxStars = 6
 const STORAGE_KEY = 'longway-save-v1'
 
@@ -125,12 +126,13 @@ function App() {
                     {(phase === 'selecting' ? selectedNode.challenge.songs : selectedSongs).map((s) => {
                       const selectedIdx = selectedSongs.findIndex((sel) => sel.id === s.id)
                       const isSelected = selectedIdx !== -1
-                      const toggleAllowed = isSongToggleAllowed(
+                      const toggleAllowed = isSongToggleAllowed({
                         phase,
                         isSelected,
-                        selectedSongs.length,
-                        maxSelectableSongs,
-                      )
+                        selectedCount: selectedSongs.length,
+                        minSelectable: minSelectableSongs,
+                        maxSelectable: maxSelectableSongs,
+                      })
                       return (
                         <li key={`${s.id}-${s.title}`}>
                           <button
@@ -247,14 +249,7 @@ function App() {
   }
 
   function toggleSongSelection(song) {
-    setSelectedSongs((prev) => {
-      const exists = prev.find((s) => s.id === song.id)
-      if (exists) {
-        return prev.filter((s) => s.id !== song.id)
-      }
-      if (prev.length >= maxSelectableSongs) return prev
-      return [...prev, song]
-    })
+    setSelectedSongs((prev) => toggleSong(prev, song, { minSelectable: minSelectableSongs, maxSelectable: maxSelectableSongs }))
   }
 
   function updateStarEntry(idx, value) {
@@ -267,7 +262,10 @@ function App() {
   }
 
   function starsComplete() {
-    return selectedSongs.length > 0 && selectedSongs.every((_, idx) => starEntries[idx] !== undefined && starEntries[idx] !== '')
+    return (
+      selectedSongs.length >= minSelectableSongs &&
+      selectedSongs.every((_, idx) => starEntries[idx] !== undefined && starEntries[idx] !== '')
+    )
   }
 
   function submitStars() {
@@ -438,7 +436,7 @@ function StarPicker({ value, onChange, max }) {
 
 export default App
 
-export function isSongToggleAllowed(phase, isSelected, selectedCount, maxSelectable) {
+export function isSongToggleAllowed({ phase, isSelected, selectedCount, maxSelectable }) {
   if (phase !== 'selecting') return false
   if (isSelected) return true
   return selectedCount < maxSelectable
@@ -455,6 +453,17 @@ export function renderStars(count) {
   const clamped = Math.max(0, Math.min(maxStars, Math.round(count || 0)))
   if (clamped === 0) return '—'
   return '⭐️'.repeat(clamped)
+}
+
+export function toggleSong(current, song, { minSelectable, maxSelectable }) {
+  const exists = current.find((s) => s.id === song.id)
+  if (exists) {
+    const next = current.filter((s) => s.id !== song.id)
+    if (next.length < minSelectable) return current
+    return next
+  }
+  if (current.length >= maxSelectable) return current
+  return [...current, song]
 }
 
 export function actionForState({

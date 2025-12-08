@@ -4,6 +4,8 @@ const totalActs = 3
 const rowsPerAct = 8
 const minNodesPerRow = 2
 const maxNodesPerRow = 5
+const minSelectable = 2
+const maxSelectable = 5
 
 const poolBounds = {
   1: { min: 9, max: 12 },
@@ -135,7 +137,7 @@ function challenge(pool, poolSize, rng) {
   const songs = sample(pool, poolSize, rng)
   return {
     name: 'Challenge',
-    summary: `Pick any 3 of these ${songs.length} tracks.`,
+    summary: summaryForSongs(songs.length),
     songs,
   }
 }
@@ -171,6 +173,12 @@ function sample(pool, count, rng) {
   return indices.map((i) => pool[i])
 }
 
+function summaryForSongs(poolSize, suffix = '') {
+  const pickCount = Math.max(minSelectable, Math.min(maxSelectable, 3))
+  const tail = suffix ? ` ${suffix}` : ''
+  return `Pick any ${pickCount} of these ${poolSize} tracks${tail}.`
+}
+
 function decadeChallenge(pool, poolSize, rng) {
   const byDecade = pool.reduce((acc, s) => {
     if (!s.year) return acc
@@ -185,7 +193,7 @@ function decadeChallenge(pool, poolSize, rng) {
   const songs = sample(list, Math.min(poolSize, list.length), rng)
   return {
     name: 'DecadeChallenge',
-    summary: `Pick any 3 of these ${songs.length} tracks from the ${decade}s.`,
+    summary: summaryForSongs(songs.length, `from the ${decade}s`),
     songs,
   }
 }
@@ -203,7 +211,7 @@ function difficultyChallenge(pool, poolSize, rng) {
   const songs = sample(list, Math.min(poolSize, list.length), rng)
   return {
     name: 'DifficultyChallenge',
-    summary: `Pick any 3 of these ${songs.length} difficulty ${level} tracks.`,
+    summary: summaryForSongs(songs.length, `at difficulty ${level}`),
     songs,
   }
 }
@@ -222,7 +230,7 @@ function genreChallenge(pool, poolSize, rng) {
   const songs = sample(list, Math.min(poolSize, list.length), rng)
   return {
     name: 'GenreChallenge',
-    summary: `Pick any 3 of these ${songs.length} ${genre} tracks.`,
+    summary: summaryForSongs(songs.length, `${genre} tracks`),
     songs,
   }
 }
@@ -233,7 +241,7 @@ function longSongChallenge(pool, poolSize, rng) {
   const songs = sample(longSongs, Math.min(poolSize, longSongs.length), rng)
   return {
     name: 'SongLengthChallenge',
-    summary: `Pick any 3 of these ${songs.length} long tracks (over 5 minutes).`,
+    summary: summaryForSongs(songs.length, 'over 5 minutes'),
     songs,
   }
 }

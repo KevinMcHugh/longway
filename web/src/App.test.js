@@ -4,6 +4,7 @@ import {
   clampSelection,
   restoreResults,
   restoreSelectedSongs,
+  toggleSong,
   serializeResults,
   isSongToggleAllowed,
   renderDifficulty,
@@ -11,18 +12,25 @@ import {
 } from './App'
 
 describe('song selection gating', () => {
+  const build = (phase, isSelected, count, max) => ({
+    phase,
+    isSelected,
+    selectedCount: count,
+    maxSelectable: max,
+  })
+
   it('disables toggling once selecting phase ends', () => {
-    expect(isSongToggleAllowed('entering', true, 3, 3)).toBe(false)
-    expect(isSongToggleAllowed('done', false, 0, 3)).toBe(false)
+    expect(isSongToggleAllowed(build('entering', true, 3, 3))).toBe(false)
+    expect(isSongToggleAllowed(build('done', false, 0, 3))).toBe(false)
   })
 
   it('allows deselection even at the max limit during selecting', () => {
-    expect(isSongToggleAllowed('selecting', true, 3, 3)).toBe(true)
+    expect(isSongToggleAllowed(build('selecting', true, 3, 3))).toBe(true)
   })
 
   it('blocks new selections when max reached', () => {
-    expect(isSongToggleAllowed('selecting', false, 3, 3)).toBe(false)
-    expect(isSongToggleAllowed('selecting', false, 2, 3)).toBe(true)
+    expect(isSongToggleAllowed(build('selecting', false, 3, 3))).toBe(false)
+    expect(isSongToggleAllowed(build('selecting', false, 2, 3))).toBe(true)
   })
 })
 
@@ -140,5 +148,19 @@ describe('selection hydration helpers', () => {
     expect(serialized['0-0'].stars).toEqual([1, 2, 3])
     const restored = restoreResults(serialized)
     expect(restored['0-0'].stars).toEqual([1, 2, 3])
+  })
+})
+
+describe('toggleSong', () => {
+  const songA = { id: 'a' }
+  const songB = { id: 'b' }
+  it('prevents dropping below minSelectable', () => {
+    const res = toggleSong([songA, songB], songA, { minSelectable: 2, maxSelectable: 5 })
+    expect(res).toEqual([songA, songB])
+  })
+
+  it('caps at maxSelectable', () => {
+    const res = toggleSong([songA, songB], { id: 'c' }, { minSelectable: 1, maxSelectable: 2 })
+    expect(res).toEqual([songA, songB])
   })
 })
