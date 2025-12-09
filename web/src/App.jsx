@@ -163,10 +163,11 @@ function App() {
           </section>
           <section className="gear">
             <p className="eyebrow">Gear</p>
-            <ul>
+            <ul className="gear-grid">
               {gearSlots.map((slot) => (
-                <li key={slot}>
-                  <strong>{slot}:</strong> {gear[slot]?.name ?? 'None'}
+                <li key={slot} className="gear-tile">
+                  <div className="gear-slot">{slot}</div>
+                  <div className="gear-name">{gear[slot]?.name ?? 'None'}</div>
                 </li>
               ))}
             </ul>
