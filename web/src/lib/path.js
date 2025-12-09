@@ -4,8 +4,8 @@ const totalActs = 3
 const rowsPerAct = 7
 const minNodesPerRow = 2
 const maxNodesPerRow = 3
-const minSelectable = 2
-const maxSelectable = 5
+const minSelectable = 1
+const maxSelectable = 3
 const shopCount = 2
 
 const poolBounds = {

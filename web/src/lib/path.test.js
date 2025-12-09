@@ -62,7 +62,7 @@ describe('path generation', () => {
     expect(exists).toBe(true)
   })
 
-  it('limits challenge selection to 2-5 songs while pools stay act-sized', () => {
+  it('limits challenge selection to 1-3 songs while pools stay act-sized', () => {
     const { acts } = generateRun(1234)
     acts.forEach((act) => {
       act.rows.forEach((row) => {
@@ -70,8 +70,8 @@ describe('path generation', () => {
           if (node.kind === nodeKinds.boss) return
           if (!node.challenge || !node.challenge.songs) return
           const len = node.challenge.songs.length
-          expect(node.challenge.selectCount).toBeGreaterThanOrEqual(2)
-          expect(node.challenge.selectCount).toBeLessThanOrEqual(5)
+          expect(node.challenge.selectCount).toBeGreaterThanOrEqual(1)
+          expect(node.challenge.selectCount).toBeLessThanOrEqual(3)
           expect(len).toBeGreaterThanOrEqual(node.challenge.selectCount)
         })
       })

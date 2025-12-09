@@ -1,6 +1,6 @@
 # Challenges
 
-Challenges gate progress on the route. Each challenge presents a pool of songs and asks the player to choose between two and five tracks to play (selection minimum/maximum is fixed; pool size varies by act). Current challenge types:
+Challenges gate progress on the route. Each challenge presents a pool of songs and asks the player to choose between one and three tracks to play (selection minimum/maximum is fixed; pool size varies by act). Current challenge types:
 
 - **TestChallenge**: Fallback; defaults to Eye of the Tiger when the catalog is thin.
 - **DecadeChallenge**: Songs from a single decade.

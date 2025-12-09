@@ -127,7 +127,7 @@ function App() {
     isReachable(selected, choices, current, currentRow, currentAct) && selected.row === currentRow
   const canAdvanceRow = phase === 'done' && currentRow < current.rows.length - 1
   const canAdvanceAct = phase === 'done' && currentRow === current.rows.length - 1 && currentAct < acts.length - 1
-  const selectTarget = selectedNode?.challenge?.selectCount ?? 3
+  const selectTarget = selectedNode?.challenge?.selectCount ?? 1
   const readyToEnter = selectedSongs.length === selectTarget
   const shopInventory = shopOffers[resultsKey(selected.act, selected.row)]
   const action =
