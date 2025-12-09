@@ -158,7 +158,7 @@ describe('selection hydration helpers', () => {
   it('creates default gear', () => {
     const gear = defaultGear()
     expect(Object.keys(gear)).toContain('Shirt')
-    expect(gear.Shirt.name).toMatch(/Cheap/i)
+    expect(gear.Shirt.name).toMatch(/None/i)
   })
 })
 

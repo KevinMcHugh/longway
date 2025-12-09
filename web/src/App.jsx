@@ -768,7 +768,7 @@ export function restoreResults(saved) {
 export function defaultGear() {
   const gear = {}
   gearSlots.forEach((slot) => {
-    gear[slot] = gearOptions[slot]?.[0] || { id: `${slot}-none`, name: 'None' }
+    gear[slot] = { id: `${slot}-none`, name: 'None', rarity: 'none' }
   })
   return gear
 }
@@ -812,4 +812,13 @@ function pickGear(pool, count, rng) {
     result.push(item)
   }
   return result
+}
+
+function mulberry32(seed) {
+  let t = seed + 0x6d2b79f5
+  return function () {
+    t = Math.imul(t ^ (t >>> 15), t | 1)
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
+  }
 }
