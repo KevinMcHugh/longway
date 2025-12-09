@@ -1,7 +1,7 @@
 import songsCsv from '../data/downloaded_songs.csv?raw'
 
 const totalActs = 3
-const rowsPerAct = 8
+const rowsPerAct = 7
 const minNodesPerRow = 2
 const maxNodesPerRow = 3
 const minSelectable = 2
