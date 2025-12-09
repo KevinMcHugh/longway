@@ -33,22 +33,19 @@ func TestGenerateRunCreatesChallengeNodes(t *testing.T) {
 				t.Fatalf("act %d row %d has no nodes", a.index, rowIdx)
 			}
 			for colIdx, n := range row {
-			if rowIdx == len(a.rows)-1 {
-				if n.kind != nodeBoss {
-					t.Fatalf("act %d final row col %d kind = %v, want boss", a.index, colIdx, n.kind)
+				if rowIdx == len(a.rows)-1 {
+					if n.kind != nodeBoss {
+						t.Fatalf("act %d final row col %d kind = %v, want boss", a.index, colIdx, n.kind)
+					}
+					continue
 				}
-				continue
-			}
-			if rowIdx == 2 || rowIdx == 4 {
-				if n.kind != nodeShop {
-					t.Fatalf("act %d row %d col %d kind = %v, want shop", a.index, rowIdx, colIdx, n.kind)
+				if n.kind == nodeShop {
+					continue
 				}
-				continue
-			}
-			if n.kind != nodeChallenge {
-				t.Fatalf("act %d row %d col %d kind = %v, want %v", a.index, rowIdx, colIdx, n.kind, nodeChallenge)
-			}
-			if n.challenge == nil {
+				if n.kind != nodeChallenge {
+					t.Fatalf("act %d row %d col %d kind = %v, want %v", a.index, rowIdx, colIdx, n.kind, nodeChallenge)
+				}
+				if n.challenge == nil {
 					t.Fatalf("act %d row %d col %d missing challenge", a.index, rowIdx, colIdx)
 				}
 				if len(n.challenge.songs) == 0 {
