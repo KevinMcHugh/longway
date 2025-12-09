@@ -6,6 +6,7 @@ import {
   shortSongChallenge,
   mediumSongChallenge,
   epicSongChallenge,
+  genreChallenge,
 } from './path'
 
 describe('path generation', () => {
@@ -98,5 +99,17 @@ describe('path generation', () => {
     expect(acts[0].rows[0][0].challenge.goal).toBe(3)
     expect(acts[1].rows[0][0].challenge.goal).toBe(4)
     expect(acts[2].rows[0][0].challenge.goal).toBe(5)
+  })
+
+  it('avoids duplicate wording in genre summaries', () => {
+    const rng = () => 0.5
+    const pool = [
+      { id: 'g1', genre: 'Indie Rock', seconds: 200 },
+      { id: 'g2', genre: 'Indie Rock', seconds: 210 },
+      { id: 'g3', genre: 'Indie Rock', seconds: 220 },
+      { id: 'g4', genre: 'Indie Rock', seconds: 230 },
+    ]
+    const genre = genreChallenge(pool, 4, rng, 1, 3)
+    expect(genre.summary.includes('tracks tracks')).toBe(false)
   })
 })

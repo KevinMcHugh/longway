@@ -210,6 +210,7 @@ export {
   shortSongChallenge,
   mediumSongChallenge,
   epicSongChallenge,
+  genreChallenge,
   actGoal,
   pickSelectCount,
   clampSelectCount,
@@ -276,7 +277,7 @@ function genreChallenge(pool, poolSize, rng, actIndex, selectCount) {
   const finalSelect = clampSelectCount(selectCount, songs.length)
   return {
     name: 'GenreChallenge',
-    summary: summaryForSongs(songs.length, finalSelect, `${genre} tracks`),
+    summary: summaryForSongs(songs.length, finalSelect, `in ${genre}`),
     songs,
     selectCount: finalSelect,
     goal: actGoal(actIndex),
