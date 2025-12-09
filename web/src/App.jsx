@@ -7,6 +7,7 @@ const colSpacing = 80
 const nodeSize = 32
 const maxStars = 6
 const STORAGE_KEY = 'longway-save-v1'
+const gearSlots = ['Shirt', 'Pants', 'Instrument', 'Amplifier']
 const instruments = [
   { value: 'band', label: 'Band' },
   { value: 'guitar', label: 'Guitar' },
@@ -16,6 +17,24 @@ const instruments = [
   { value: 'keys', label: 'Keys' },
   { value: 'rhythm', label: 'Rhythm' },
 ]
+const gearOptions = {
+  Shirt: [
+    { id: 'shirt-cheap', name: 'Cheap Shirt', quality: 'cheap' },
+    { id: 'shirt-fancy', name: 'Fancy Shirt', quality: 'fancy' },
+  ],
+  Pants: [
+    { id: 'pants-cheap', name: 'Cheap Pants', quality: 'cheap' },
+    { id: 'pants-fancy', name: 'Fancy Pants', quality: 'fancy' },
+  ],
+  Instrument: [
+    { id: 'instrument-cheap', name: 'Cheap Instrument', quality: 'cheap' },
+    { id: 'instrument-fancy', name: 'Fancy Instrument', quality: 'fancy' },
+  ],
+  Amplifier: [
+    { id: 'amp-cheap', name: 'Cheap Amplifier', quality: 'cheap' },
+    { id: 'amp-fancy', name: 'Fancy Amplifier', quality: 'fancy' },
+  ],
+}
 
 function App() {
   const savedState = useMemo(() => readSavedState(), [])
@@ -37,6 +56,7 @@ function App() {
   )
   const [starEntries, setStarEntries] = useState(savedState?.starEntries ?? [])
   const [results, setResults] = useState(() => restoreResults(savedState?.results))
+  const [gear, setGear] = useState(savedState?.gear ?? defaultGear())
   const hydrated = useRef(false)
   const prevAct = useRef(currentAct)
   const [loadedFromStorage] = useState(Boolean(savedState))
@@ -77,9 +97,10 @@ function App() {
       lastSaved: now,
       gameOver,
       instrument,
+      gear,
     })
     setLastSaved(now)
-  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results, gameOver, instrument])
+  }, [seed, currentAct, selected, phase, currentRow, choices, selectedSongs, starEntries, results, gameOver, instrument, gear])
 
   const current = acts[currentAct]
   const selectedNode =
@@ -140,6 +161,16 @@ function App() {
               }}
             />
           </section>
+          <section className="gear">
+            <p className="eyebrow">Gear</p>
+            <ul>
+              {gearSlots.map((slot) => (
+                <li key={slot}>
+                  <strong>{slot}:</strong> {gear[slot]?.name ?? 'None'}
+                </li>
+              ))}
+            </ul>
+          </section>
         </div>
         <aside className="pane right">
           {selectedNode ? (
@@ -157,6 +188,34 @@ function App() {
               </p>
               {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
                 <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+              ) : null}
+
+              {selectedNode.kind === 'shop' ? (
+                <>
+                  <p className="eyebrow">Loadout</p>
+                  <div className="shop-grid">
+                    {gearSlots.map((slot) => (
+                      <div key={slot} className="shop-slot">
+                        <p className="meta">{slot}</p>
+                        <div className="shop-options">
+                          {(gearOptions[slot] || []).map((item) => {
+                            const equipped = gear[slot]?.id === item.id
+                            return (
+                              <button
+                                key={item.id}
+                                className={`shop-item ${equipped ? 'shop-item-active' : ''}`}
+                                onClick={() => equipGear(slot, item)}
+                                type="button"
+                              >
+                                {item.name}
+                              </button>
+                            )
+                          })}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
               ) : null}
 
               {selectedNode.kind !== 'shop' && phase !== 'idle' && selectedNode.challenge?.songs && (
@@ -407,6 +466,7 @@ function App() {
     setSelectedSongs([])
     setStarEntries([])
     setGameOver(false)
+    setGear(defaultGear())
   }
 
   function openNewGame() {
@@ -418,6 +478,13 @@ function App() {
   function confirmNewGame() {
     setNewGameOpen(false)
     startNewRun()
+  }
+
+  function equipGear(slot, item) {
+    setGear((prev) => ({
+      ...prev,
+      [slot]: item,
+    }))
   }
 }
 
@@ -673,4 +740,12 @@ export function restoreResults(saved) {
     out[key] = { stars: value?.stars ?? [] }
   })
   return out
+}
+
+export function defaultGear() {
+  const gear = {}
+  gearSlots.forEach((slot) => {
+    gear[slot] = gearOptions[slot]?.[0] || { id: `${slot}-none`, name: 'None' }
+  })
+  return gear
 }

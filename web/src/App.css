@@ -82,6 +82,21 @@ h1 {
   height: calc(100% - 48px);
 }
 
+.gear {
+  margin-top: 1rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #1e293b;
+}
+
+.gear ul {
+  list-style: none;
+  padding: 0;
+  margin: 0.25rem 0 0 0;
+  display: grid;
+  gap: 0.25rem;
+  color: #cbd5e1;
+}
+
 .act {
   width: 100%;
   height: 100%;
@@ -145,6 +160,40 @@ h1 {
 .node-shop {
   background: #22d3ee;
   color: #0b1222;
+}
+
+.shop-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.75rem;
+}
+
+.shop-slot {
+  border: 1px solid #1e293b;
+  border-radius: 10px;
+  padding: 0.75rem;
+  background: #0b1222;
+}
+
+.shop-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.shop-item {
+  background: #111827;
+  border: 1px solid #1e293b;
+  color: #e2e8f0;
+  padding: 0.35rem 0.5rem;
+  border-radius: 8px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.shop-item-active {
+  border-color: #22d3ee;
+  background: #0e1a2e;
 }
 
 .seed {

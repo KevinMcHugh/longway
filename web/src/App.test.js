@@ -10,6 +10,7 @@ import {
   renderDifficulty,
   renderStars,
   meetsGoal,
+  defaultGear,
 } from './App'
 
 describe('song selection gating', () => {
@@ -152,6 +153,12 @@ describe('selection hydration helpers', () => {
     expect(serialized['0-0'].stars).toEqual([1, 2, 3])
     const restored = restoreResults(serialized)
     expect(restored['0-0'].stars).toEqual([1, 2, 3])
+  })
+
+  it('creates default gear', () => {
+    const gear = defaultGear()
+    expect(Object.keys(gear)).toContain('Shirt')
+    expect(gear.Shirt.name).toMatch(/Cheap/i)
   })
 })
 
