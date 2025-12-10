@@ -276,6 +276,7 @@ function App() {
                                   {s.year ? <span className="meta">({s.year})</span> : null}
                                 </span>
                                 <span className="song-meta">
+                                  {s.origin ? <span className="meta">{s.origin}</span> : null}
                                   {s.genre ? <span className="meta">{s.genre}</span> : null}
                                   {s.length ? <span className="meta"> • {s.length}</span> : null}
                                   {s.difficulty ? (
