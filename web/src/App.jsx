@@ -277,7 +277,7 @@ function App() {
                                 </span>
                                 <span className="song-meta">
                                   {s.origin ? <span className="meta">{s.origin}</span> : null}
-                                  {s.genre ? <span className="meta">{s.genre}</span> : null}
+                                  {s.genre ? <span className="meta"> • {s.genre}</span> : null}
                                   {s.length ? <span className="meta"> • {s.length}</span> : null}
                                   {s.difficulty ? (
                                     <span className="meta"> • {renderDifficulty(s.difficulty)}</span>
