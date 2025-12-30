@@ -22,7 +22,8 @@ export const nodeKinds = {
 
 const catalog = ensureBoss(parseSongsJson(songsJson))
 export const songs = catalog
-export const songOrigins = collectOrigins(catalog)
+export const originGroups = collectOriginGroups(catalog)
+export const songOrigins = originGroups.flatMap((g) => g.origins)
 
 export function generateRun(seed = Date.now(), _instrument, allowedOrigins) {
   const rng = mulberry32(seed)
@@ -406,6 +407,7 @@ function parseSongsJson(list) {
         artist: clean(raw.artist),
         album: clean(raw.album),
         genre: clean(raw.genre),
+        series: clean(raw.series),
         difficulty,
         length: clean(raw.length),
         year: Number(raw.year) || undefined,
@@ -473,6 +475,21 @@ function collectOrigins(list) {
   return Array.from(new Set(list.map((s) => s.origin).filter(Boolean))).sort((a, b) =>
     a.localeCompare(b),
   )
+}
+
+export function collectOriginGroups(list) {
+  const bySeries = new Map()
+  list.forEach((song) => {
+    const series = song.series || 'Other'
+    if (!bySeries.has(series)) bySeries.set(series, new Set())
+    if (song.origin) bySeries.get(series).add(song.origin)
+  })
+  return Array.from(bySeries.entries())
+    .map(([series, origins]) => ({
+      series,
+      origins: Array.from(origins).sort((a, b) => a.localeCompare(b)),
+    }))
+    .sort((a, b) => a.series.localeCompare(b.series))
 }
 
 export function filterSongsByOrigin(list, allowedOrigins) {

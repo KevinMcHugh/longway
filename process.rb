@@ -13,6 +13,7 @@ def load_source_info(path)
     source = row['source']&.strip
     next if source.nil? || source.empty?
     info[source] = {
+      series: row['series']&.strip,
       included: truthy?(row['included']),
       supports_guitar: truthy?(row['supports_guitar']),
       supports_bass: truthy?(row['supports_bass']),
@@ -46,6 +47,7 @@ def parse_csv(input_csv, source_info)
       album_track: row['album_track'],
       playlist_track: row['playlist_track'],
       origin: origin,
+      series: source_meta[:series],
       length: row['length'],
       seconds: row['seconds'].to_i,
       year: row['year'].to_i,

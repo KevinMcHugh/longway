@@ -403,6 +403,23 @@ h1 {
   margin-bottom: 0.4rem;
 }
 
+.origin-groups {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.origin-group {
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 0.5rem;
+}
+
+.origin-series {
+  margin: 0 0 0.25rem 0;
+  font-weight: 700;
+  color: #cbd5e1;
+}
+
 .origin-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

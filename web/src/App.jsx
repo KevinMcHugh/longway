@@ -1,5 +1,5 @@
 import './App.css'
-import { generateRun, nodeKinds, songOrigins } from './lib/path'
+import { generateRun, nodeKinds, songOrigins, originGroups } from './lib/path'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const rowSpacing = 70
@@ -426,20 +426,27 @@ function App() {
                   </div>
                   <details className="origin-collapsible" open>
                     <summary className="origin-summary">Origins ({pendingOrigins.length})</summary>
-                    <div className="origin-list">
-                      {songOrigins.map((origin) => {
-                        const checked = pendingOrigins.includes(origin)
-                        return (
-                          <label key={origin} className="checkbox-row">
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={() => togglePendingOrigin(origin)}
-                            />
-                            <span>{origin}</span>
-                          </label>
-                        )
-                      })}
+                    <div className="origin-groups">
+                      {originGroups.map((group) => (
+                        <div key={group.series} className="origin-group">
+                          <p className="origin-series">{group.series}</p>
+                          <div className="origin-list">
+                            {group.origins.map((origin) => {
+                              const checked = pendingOrigins.includes(origin)
+                              return (
+                                <label key={origin} className="checkbox-row">
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => togglePendingOrigin(origin)}
+                                  />
+                                  <span>{origin}</span>
+                                </label>
+                              )
+                            })}
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </details>
                 </div>

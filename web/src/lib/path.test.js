@@ -9,6 +9,8 @@ import {
   genreChallenge,
   filterSongsByOrigin,
   songOrigins,
+  originGroups,
+  collectOriginGroups,
 } from './path'
 
 describe('path generation', () => {
@@ -149,5 +151,16 @@ describe('path generation', () => {
     const parsed = filterSongsByOrigin(list, null)
     expect(parsed.some((s) => s.id === 'drop')).toBe(false)
     expect(parsed.some((s) => s.id === 'keep')).toBe(true)
+  })
+
+  it('groups origins by series', () => {
+    const groups = collectOriginGroups([
+      { origin: 'A', series: 'Series 1', title: 't1' },
+      { origin: 'B', series: 'Series 1', title: 't2' },
+      { origin: 'C', series: 'Series 2', title: 't3' },
+    ])
+    const first = groups.find((g) => g.series === 'Series 1')
+    expect(first.origins).toEqual(['A', 'B'])
+    expect(originGroups.length).toBeGreaterThan(0)
   })
 })
