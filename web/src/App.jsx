@@ -146,6 +146,7 @@ function App() {
   const readyToEnter = selectedSongs.length === selectTarget
   const shopInventory = shopOffers[ resultsKey(selected.act, selected.row) ]
   const voltagePct = Math.max(0, Math.min(100, (voltage / startingVoltage) * 100))
+  const voltageColorClass = voltage <= lowVoltageThreshold ? 'voltage-bar-low' : voltage <= 7000 ? 'voltage-bar-mid' : ''
   const action =
     gameOver && selectedNode?.kind !== 'boss'
       ? null
@@ -169,18 +170,18 @@ function App() {
         </div>
         <div className="toolbar">
           <div className="act-label">Act {current?.index ?? 1}</div>
-          <div className="voltage-meter">
-            <p className="eyebrow">Voltage</p>
-            <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
-              {voltage.toLocaleString()} V
+            <div className="voltage-meter">
+              <p className="eyebrow">Voltage</p>
+              <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
+                {voltage.toLocaleString()} V
+              </div>
+              <div className="voltage-bar" aria-label="Voltage remaining">
+                <div
+                  className={`voltage-bar-fill ${voltageColorClass}`}
+                  style={{ width: `${voltagePct}%` }}
+                />
+              </div>
             </div>
-            <div className="voltage-bar" aria-label="Voltage remaining">
-              <div
-                className={`voltage-bar-fill ${voltage <= lowVoltageThreshold ? 'voltage-bar-low' : ''}`}
-                style={{ width: `${voltagePct}%` }}
-              />
-            </div>
-          </div>
           <div className="seed">
             <div>Seed: {seed}</div>
             <div className="autosave">
