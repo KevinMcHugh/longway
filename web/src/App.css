@@ -389,11 +389,27 @@ h1 {
   gap: 0.5rem;
 }
 
+.origin-collapsible {
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+  padding: 0.5rem;
+  background: #0b1222;
+}
+
+.origin-summary {
+  cursor: pointer;
+  color: #e2e8f0;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+
 .origin-list {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 0.35rem;
   margin: 0.25rem 0;
+  max-height: 200px;
+  overflow: auto;
 }
 
 .origin-controls {

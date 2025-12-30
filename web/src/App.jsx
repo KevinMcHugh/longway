@@ -425,21 +425,24 @@ function App() {
                       Clear
                     </button>
                   </div>
-                  <div className="origin-list">
-                    {songOrigins.map((origin) => {
-                      const checked = pendingOrigins.includes(origin)
-                      return (
-                        <label key={origin} className="checkbox-row">
-                          <input
-                            type="checkbox"
-                            checked={checked}
-                            onChange={() => togglePendingOrigin(origin)}
-                          />
-                          <span>{origin}</span>
-                        </label>
-                      )
-                    })}
-                  </div>
+                  <details className="origin-collapsible" open>
+                    <summary className="origin-summary">Origins ({pendingOrigins.length})</summary>
+                    <div className="origin-list">
+                      {songOrigins.map((origin) => {
+                        const checked = pendingOrigins.includes(origin)
+                        return (
+                          <label key={origin} className="checkbox-row">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => togglePendingOrigin(origin)}
+                            />
+                            <span>{origin}</span>
+                          </label>
+                        )
+                      })}
+                    </div>
+                  </details>
                   <p className="meta">
                     At least one origin must remain selected. Choices persist between runs.
                   </p>
