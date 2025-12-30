@@ -23,13 +23,7 @@ def load_source_info(path)
   info
 end
 
-def process_csv(input_csv, output_json, web_json)
-  unless File.exist?(input_csv)
-    warn "Missing #{input_csv}; run fetch.rb first."
-    return
-  end
-
-  source_info = load_source_info('source_info.csv')
+def parse_csv(input_csv, source_info)
   rows = []
   CSV.foreach(input_csv, headers: true) do |row|
     origin = row['origin']
@@ -63,13 +57,38 @@ def process_csv(input_csv, output_json, web_json)
       supports_vocals: source_meta[:supports_vocals]
     }
   end
+  rows
+end
 
-  File.write(output_json, JSON.pretty_generate(rows))
+def process_csvs(input_csvs, output_json, web_json)
+  source_info = load_source_info('source_info.csv')
+  combined = []
+  missing = []
+
+  input_csvs.each do |input_csv|
+    if File.exist?(input_csv)
+      combined.concat(parse_csv(input_csv, source_info))
+    else
+      missing << input_csv
+    end
+  end
+
+  unless missing.empty?
+    warn "Missing CSVs: #{missing.join(', ')}" 
+  end
+
+  if combined.empty?
+    warn 'No rows processed; nothing to write.'
+    return
+  end
+
+  File.write(output_json, JSON.pretty_generate(combined))
   FileUtils.mkdir_p(File.dirname(web_json))
   FileUtils.cp(output_json, web_json)
-  puts "Processed #{rows.length} rows from #{input_csv} into #{output_json} (copied to #{web_json})"
+  puts "Processed #{combined.length} rows into #{output_json} (copied to #{web_json})"
 end
 
 if $PROGRAM_NAME == __FILE__
-  process_csv('downloaded_songs.csv', 'downloaded_songs.json', File.join('web', 'src', 'data', 'downloaded_songs.json'))
+  inputs = ARGV.empty? ? ['downloaded_songs.csv'] : ARGV
+  process_csvs(inputs, 'downloaded_songs.json', File.join('web', 'src', 'data', 'downloaded_songs.json'))
 end

@@ -121,4 +121,4 @@ end
 
 puts "Wrote #{rows.length} songs to #{output}"
 
-process_csv(output, 'downloaded_songs.json', File.join('web', 'src', 'data', 'downloaded_songs.json'))
+process_csvs([output], 'downloaded_songs.json', File.join('web', 'src', 'data', 'downloaded_songs.json'))
