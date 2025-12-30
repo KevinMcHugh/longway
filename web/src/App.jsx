@@ -541,10 +541,6 @@ function App() {
         stars: starEntries.map((v) => Number(v)),
       },
     }))
-    if (!meetsGoal(selectedNode?.challenge?.goal, starEntries)) {
-      setGameOver(true)
-      return
-    }
     setPhase('done')
   }
 
