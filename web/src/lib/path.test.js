@@ -7,6 +7,8 @@ import {
   mediumSongChallenge,
   epicSongChallenge,
   genreChallenge,
+  filterSongsByOrigin,
+  songOrigins,
 } from './path'
 
 describe('path generation', () => {
@@ -119,5 +121,23 @@ describe('path generation', () => {
     ]
     const genre = genreChallenge(pool, 4, rng, 1, 3)
     expect(genre.summary.includes('tracks tracks')).toBe(false)
+  })
+
+  it('filters runs by origin list while keeping the boss available', () => {
+    const pool = [
+      { id: 'a', origin: 'Origin A', title: 'Song A' },
+      { id: 'b', origin: 'Origin B', title: 'Song B' },
+      { id: 'c', origin: 'Origin A', title: 'Song C' },
+      { id: 'boss', title: 'Bohemian Rhapsody', origin: 'Origin B' },
+    ]
+    const filtered = filterSongsByOrigin(pool, ['Origin A'])
+    expect(filtered.some((s) => s.origin === 'Origin A')).toBe(true)
+    expect(filtered.every((s) => s.origin === 'Origin A' || s.title === 'Bohemian Rhapsody')).toBe(
+      true,
+    )
+  })
+
+  it('exposes available song origins', () => {
+    expect(songOrigins.length).toBeGreaterThan(0)
   })
 })

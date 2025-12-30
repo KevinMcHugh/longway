@@ -11,6 +11,8 @@ import {
   renderStars,
   meetsGoal,
   defaultGear,
+  calculateVoltageLoss,
+  applyVoltageLoss,
 } from './App'
 
 describe('song selection gating', () => {
@@ -180,5 +182,18 @@ describe('meetsGoal', () => {
   it('checks average against goal', () => {
     expect(meetsGoal(3, [3, 3, 3])).toBe(true)
     expect(meetsGoal(4, [3, 3, 3])).toBe(false)
+  })
+})
+
+describe('voltage tracking', () => {
+  it('charges 1000 volts per missing star', () => {
+    const loss = calculateVoltageLoss([6, 5, 0])
+    expect(loss).toBe(7000)
+  })
+
+  it('never drops below zero after applying loss', () => {
+    const { remaining, loss } = applyVoltageLoss(2000, [0, 0, 0])
+    expect(loss).toBe(18000)
+    expect(remaining).toBe(0)
   })
 })

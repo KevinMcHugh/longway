@@ -1,11 +1,14 @@
 import './App.css'
-import { generateRun, nodeKinds } from './lib/path'
+import { generateRun, nodeKinds, songOrigins } from './lib/path'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
 const rowSpacing = 70
 const colSpacing = 80
 const nodeSize = 32
 const maxStars = 6
+const startingVoltage = 10000
+const voltagePenaltyPerMissingStar = 1000
+const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
 const gearSlots = ['Shirt', 'Pants', 'Instrument', 'Amplifier']
 const instruments = [
@@ -41,7 +44,13 @@ function App() {
   const initialSeed = savedState?.seed ?? Date.now()
   const [seed, setSeed] = useState(initialSeed)
   const [instrument, setInstrument] = useState(savedState?.instrument ?? 'band')
-  const { acts } = useMemo(() => generateRun(seed, instrument), [seed, instrument])
+  const [selectedOrigins, setSelectedOrigins] = useState(
+    savedState?.selectedOrigins?.length ? savedState.selectedOrigins : songOrigins,
+  )
+  const { acts } = useMemo(
+    () => generateRun(seed, instrument, selectedOrigins),
+    [seed, instrument, selectedOrigins],
+  )
   const [currentAct, setCurrentAct] = useState(savedState?.currentAct ?? 0)
   const [selected, setSelected] = useState(
     clampSelection(savedState?.selected ?? { act: 0, row: 0, col: 0 }, acts),
@@ -57,6 +66,7 @@ function App() {
   const [starEntries, setStarEntries] = useState(savedState?.starEntries ?? [])
   const [results, setResults] = useState(() => restoreResults(savedState?.results))
   const [gear, setGear] = useState(savedState?.gear ?? defaultGear())
+  const [voltage, setVoltage] = useState(savedState?.voltage ?? startingVoltage)
   const hydrated = useRef(false)
   const prevAct = useRef(currentAct)
   const [loadedFromStorage] = useState(Boolean(savedState))
@@ -65,6 +75,7 @@ function App() {
   const [newGameOpen, setNewGameOpen] = useState(false)
   const [pendingInstrument, setPendingInstrument] = useState(instrument)
   const [pendingSeed, setPendingSeed] = useState(String(seed))
+  const [pendingOrigins, setPendingOrigins] = useState(selectedOrigins)
   const [shopOffers, setShopOffers] = useState(
     savedState?.shopOffers ?? generateShopOffers(acts, seed),
   )
@@ -102,6 +113,8 @@ function App() {
       instrument,
       gear,
       shopOffers,
+      voltage,
+      selectedOrigins,
     })
     setLastSaved(now)
   }, [
@@ -118,6 +131,8 @@ function App() {
     instrument,
     gear,
     shopOffers,
+    voltage,
+    selectedOrigins,
   ])
 
   const current = acts[currentAct]
@@ -153,6 +168,12 @@ function App() {
         </div>
         <div className="toolbar">
           <div className="act-label">Act {current?.index ?? 1}</div>
+          <div className="voltage-meter">
+            <p className="eyebrow">Voltage</p>
+            <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
+              {voltage.toLocaleString()} V
+            </div>
+          </div>
           <div className="seed">
             <div>Seed: {seed}</div>
             <div className="autosave">
@@ -383,6 +404,46 @@ function App() {
                     />
                   </label>
                 </div>
+                <div className="form-row">
+                  <p className="select-label">Song origins</p>
+                  <div className="origin-controls">
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => setPendingOrigins(songOrigins)}
+                    >
+                      Select all
+                    </button>
+                    <button
+                      type="button"
+                      className="ghost"
+                      onClick={() => {
+                        if (pendingOrigins.length === 1) return
+                        setPendingOrigins((prev) => (prev.length ? [] : [...songOrigins]))
+                      }}
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="origin-list">
+                    {songOrigins.map((origin) => {
+                      const checked = pendingOrigins.includes(origin)
+                      return (
+                        <label key={origin} className="checkbox-row">
+                          <input
+                            type="checkbox"
+                            checked={checked}
+                            onChange={() => togglePendingOrigin(origin)}
+                          />
+                          <span>{origin}</span>
+                        </label>
+                      )
+                    })}
+                  </div>
+                  <p className="meta">
+                    At least one origin must remain selected. Choices persist between runs.
+                  </p>
+                </div>
                 <div className="dialog-actions">
                   <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
                     Cancel
@@ -445,6 +506,11 @@ function App() {
   function submitStars() {
     if (!starsComplete()) return
     const key = resultsKey(currentAct, selected.row)
+    const { remaining: nextVoltage } = applyVoltageLoss(voltage, starEntries, {
+      max: maxStars,
+      penaltyPerMissingStar: voltagePenaltyPerMissingStar,
+    })
+    setVoltage(nextVoltage)
     setResults((prev) => ({
       ...prev,
       [key]: {
@@ -476,9 +542,22 @@ function App() {
     setCurrentAct((prev) => Math.min(prev + 1, acts.length - 1))
   }
 
+  function togglePendingOrigin(origin) {
+    setPendingOrigins((prev) => {
+      const exists = prev.includes(origin)
+      if (exists) {
+        if (prev.length === 1) return prev
+        return prev.filter((o) => o !== origin)
+      }
+      return [...prev, origin]
+    })
+  }
+
   function startNewRun() {
     const nextSeed = parseInt(pendingSeed || '', 10)
     const finalSeed = Number.isNaN(nextSeed) ? Date.now() : nextSeed
+    const allowedOrigins = pendingOrigins?.length ? pendingOrigins : songOrigins
+    setSelectedOrigins(allowedOrigins)
     setSeed(finalSeed)
     setInstrument(pendingInstrument)
     setCurrentAct(0)
@@ -492,11 +571,13 @@ function App() {
     setGameOver(false)
     setGear(defaultGear())
     setShopOffers(generateShopOffers(acts, finalSeed))
+    setVoltage(startingVoltage)
   }
 
   function openNewGame() {
     setPendingInstrument(instrument)
     setPendingSeed(String(seed))
+    setPendingOrigins(selectedOrigins)
     setNewGameOpen(true)
   }
 
@@ -700,6 +781,21 @@ export function meetsGoal(goal, entries) {
   if (!nums.length) return true
   const avg = nums.reduce((a, b) => a + b, 0) / nums.length
   return avg >= goal
+}
+
+export function calculateVoltageLoss(entries, { max = maxStars, penaltyPerMissingStar = voltagePenaltyPerMissingStar } = {}) {
+  if (!entries || !entries.length) return 0
+  return entries.reduce((total, entry) => {
+    const stars = Math.max(0, Math.min(max, Number(entry) || 0))
+    const missing = max - stars
+    return total + missing * penaltyPerMissingStar
+  }, 0)
+}
+
+export function applyVoltageLoss(currentVoltage, entries, opts) {
+  const loss = calculateVoltageLoss(entries, opts)
+  const remaining = Math.max(0, currentVoltage - loss)
+  return { remaining, loss }
 }
 
 export function persistState(state) {

@@ -2,6 +2,27 @@ require 'json'
 require 'csv'
 require 'fileutils'
 
+def truthy?(value)
+  value.to_s.strip.downcase == 'true'
+end
+
+def load_source_info(path)
+  return {} unless File.exist?(path)
+  info = {}
+  CSV.foreach(path, headers: true) do |row|
+    source = row['source']&.strip
+    next if source.nil? || source.empty?
+    info[source] = {
+      included: truthy?(row['included']),
+      supports_guitar: truthy?(row['supports_guitar']),
+      supports_bass: truthy?(row['supports_bass']),
+      supports_drums: truthy?(row['supports_drums']),
+      supports_vocals: truthy?(row['supports_vocals'])
+    }
+  end
+  info
+end
+
 def get_page(charter, year, page_number)
   curl = <<-EOS
 curl 'https://api.enchor.us/search/advanced' \
@@ -27,6 +48,7 @@ end
 
 # Accumulate this into downloaded_songs.csv with normalized fields
 rows = []
+source_info = load_source_info('source_info.csv')
 
 %w(Harmonix Neversoft).each do |charter|
   (1960..2025).each do |year|
@@ -41,6 +63,7 @@ rows = []
         length_in_seconds = ((song['song_length'] || 0).to_f / 1000).round
         length_str = format("%02d:%02d", length_in_seconds / 60, length_in_seconds % 60)
         next if song['packName'].nil? || song['packName'].empty?
+        source_meta = source_info[song['packName']] || {}
 
         rows << {
           id: song['md5'] || song['id'] || "song-#{rows.length + 1}",
@@ -63,6 +86,12 @@ rows = []
           length: length_str,
           seconds: length_in_seconds,
           year: song['year'],
+          difficulty: song['diff_band'],
+          source_included: source_meta[:included],
+          supports_guitar: source_meta[:supports_guitar],
+          supports_bass: source_meta[:supports_bass],
+          supports_drums: source_meta[:supports_drums],
+          supports_vocals: source_meta[:supports_vocals]
         }
       end
       break if page.length < 10
@@ -74,7 +103,7 @@ output = 'downloaded_songs.csv'
 CSV.open(output, 'w') do |csv|
   csv << %w[id title artist album genre length seconds year 
             diff_band diff_guitar diff_bass diff_drums diff_vocals diff_keys diff_guitar_coop diff_rhythm 
-            ordering album_track playlist_track origin length seconds year]
+            ordering album_track playlist_track origin length seconds year difficulty source_included supports_guitar supports_bass supports_drums supports_vocals]
   rows.each do |row|
     csv << [
       row[:id],
@@ -99,7 +128,13 @@ CSV.open(output, 'w') do |csv|
       row[:origin],
       row[:length],
       row[:seconds],
-      row[:year]
+      row[:year],
+      row[:difficulty],
+      row[:source_included],
+      row[:supports_guitar],
+      row[:supports_bass],
+      row[:supports_drums],
+      row[:supports_vocals]
     ]
   end
 end
@@ -107,7 +142,10 @@ end
 puts "Wrote #{rows.length} songs to #{output}"
 
 web_output = File.join('web', 'src', 'data', 'downloaded_songs.csv')
-if File.exist?(web_output)
-  FileUtils.cp(output, web_output)
-  puts "Copied CSV to #{web_output}"
-end
+
+json_output = 'downloaded_songs.json'
+File.write(json_output, JSON.pretty_generate(rows))
+web_json_output = File.join('web', 'src', 'data', 'downloaded_songs.json')
+FileUtils.mkdir_p(File.dirname(web_json_output))
+FileUtils.cp(json_output, web_json_output)
+puts "Wrote #{json_output} and copied to #{web_json_output}"

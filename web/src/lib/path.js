@@ -1,4 +1,4 @@
-import songsCsv from '../data/downloaded_songs.csv?raw'
+import songsJson from '../data/downloaded_songs.json'
 
 const totalActs = 3
 const rowsPerAct = 7
@@ -20,20 +20,22 @@ export const nodeKinds = {
   boss: 'boss',
 }
 
-const catalog = ensureBoss(parseSongs(songsCsv))
+const catalog = ensureBoss(parseSongsJson(songsJson))
 export const songs = catalog
+export const songOrigins = collectOrigins(catalog)
 
-export function generateRun(seed = Date.now()) {
+export function generateRun(seed = Date.now(), _instrument, allowedOrigins) {
   const rng = mulberry32(seed)
   const acts = []
+  const filteredCatalog = filterSongsByOrigin(catalog, allowedOrigins)
   for (let i = 0; i < totalActs; i++) {
-    acts.push(generateAct(i + 1, rng))
+    acts.push(generateAct(i + 1, rng, filteredCatalog))
   }
   return { acts, seed }
 }
 
-function generateAct(index, rng) {
-  const filteredSongs = applyActDifficultyConstraints(index, catalog)
+function generateAct(index, rng, catalogSubset) {
+  const filteredSongs = applyActDifficultyConstraints(index, catalogSubset)
   const rows = []
   const shopRows = pickShopRows(rowsPerAct, rng)
 
@@ -62,7 +64,7 @@ function generateAct(index, rng) {
         col,
         kind: isBoss ? nodeKinds.boss : isShop ? nodeKinds.shop : nodeKinds.challenge,
         challenge: isBoss
-          ? bossChallenge(index)
+          ? bossChallenge(index, catalogSubset)
           : isShop
             ? null
             : challenge(filteredSongs, poolSize, selectCount, rng, index),
@@ -162,8 +164,8 @@ function challenge(pool, poolSize, selectCount, rng, actIndex) {
   }
 }
 
-function bossChallenge(actIndex) {
-  const boss = catalog.find((s) => s.title === 'Bohemian Rhapsody') ?? catalog[0]
+function bossChallenge(actIndex, pool) {
+  const boss = pool.find((s) => s.title === 'Bohemian Rhapsody') ?? pool[0]
   return {
     name: 'Boss',
     summary: 'Final showdown: Bohemian Rhapsody.',
@@ -389,66 +391,43 @@ function shuffle(arr, rng) {
   return a
 }
 
-function parseSongs(csv) {
-  const lines = csv.trim().split('\n')
-  const header = lines.shift().split(',')
-  const lastIdx = (key) => findLastIndex(header, key)
-  const idIdx = lastIdx('id')
-  const titleIdx = lastIdx('title')
-  const artistIdx = lastIdx('artist')
-  const albumIdx = lastIdx('album')
-  const genreIdx = lastIdx('genre')
-  const difficultyIdx = lastIdx('diff_band') !== -1 ? lastIdx('diff_band') : lastIdx('difficulty')
-  const lengthIdx = lastIdx('length')
-  const yearIdx = lastIdx('year')
-  const secondsIdx = lastIdx('seconds')
-  const originIdx = lastIdx('origin')
-  const diffGuitarIdx = lastIdx('diff_guitar')
-  const diffBassIdx = lastIdx('diff_bass')
-  const diffDrumsIdx = lastIdx('diff_drums')
-  const diffVocalsIdx = lastIdx('diff_vocals')
-  const diffKeysIdx = lastIdx('diff_keys')
-  const diffRhythmIdx = lastIdx('diff_rhythm')
-
-  return lines
-    .map((line) => {
-      const cols = line.split(',')
-      const clean = (str) => (str || '').replace(/^"+|"+$/g, '').replace(/""/g, '"').trim()
-      const length = clean(cols[lengthIdx])
-      const secondsFromCsv = secondsIdx >= 0 ? Number(clean(cols[secondsIdx])) : undefined
-      const seconds =
-        secondsFromCsv && !Number.isNaN(secondsFromCsv) && secondsFromCsv > 0
-          ? secondsFromCsv
-          : parseSeconds(length)
+function parseSongsJson(list) {
+  if (!Array.isArray(list)) return []
+  return list
+    .map((raw, idx) => {
+      const clean = (val) => (typeof val === 'string' ? val.trim() : val)
+      const seconds = Number(raw.seconds)
+      const difficulty = clampDifficulty(
+        Number(raw.difficulty ?? raw.diff_band ?? raw.diff_guitar ?? 0),
+      )
       return {
-        id: clean(cols[idIdx]) || `${Math.random()}`,
-        title: clean(cols[titleIdx]),
-        artist: clean(cols[artistIdx]),
-        album: clean(cols[albumIdx]),
-        genre: clean(cols[genreIdx]),
-        difficulty: clampDifficulty(Number(cols[difficultyIdx])),
-        length,
-        year: Number(clean(cols[yearIdx])) || undefined,
-        seconds,
-        origin: clean(cols[originIdx]),
-        diff_guitar: clampDifficulty(Number(clean(cols[diffGuitarIdx]))),
-        diff_bass: clampDifficulty(Number(clean(cols[diffBassIdx]))),
-        diff_drums: clampDifficulty(Number(clean(cols[diffDrumsIdx]))),
-        diff_vocals: clampDifficulty(Number(clean(cols[diffVocalsIdx]))),
-        diff_keys: clampDifficulty(Number(clean(cols[diffKeysIdx]))),
-        diff_rhythm: clampDifficulty(Number(clean(cols[diffRhythmIdx]))),
+        id: clean(raw.id) || `song-${idx}`,
+        title: clean(raw.title),
+        artist: clean(raw.artist),
+        album: clean(raw.album),
+        genre: clean(raw.genre),
+        difficulty,
+        length: clean(raw.length),
+        year: Number(raw.year) || undefined,
+        seconds:
+          seconds && !Number.isNaN(seconds) && seconds > 0
+            ? seconds
+            : parseSeconds(clean(raw.length)),
+        origin: clean(raw.origin),
+        diff_guitar: clampDifficulty(Number(raw.diff_guitar)),
+        diff_bass: clampDifficulty(Number(raw.diff_bass)),
+        diff_drums: clampDifficulty(Number(raw.diff_drums)),
+        diff_vocals: clampDifficulty(Number(raw.diff_vocals)),
+        diff_keys: clampDifficulty(Number(raw.diff_keys)),
+        diff_rhythm: clampDifficulty(Number(raw.diff_rhythm)),
+        source_included: Boolean(raw.source_included),
+        supports_guitar: Boolean(raw.supports_guitar),
+        supports_bass: Boolean(raw.supports_bass),
+        supports_drums: Boolean(raw.supports_drums),
+        supports_vocals: Boolean(raw.supports_vocals),
       }
     })
     .filter((s) => s.title)
-}
-
-function findLastIndex(arr, key) {
-  const target = key.toLowerCase()
-  let idx = -1
-  arr.forEach((val, i) => {
-    if (val.toLowerCase() === target) idx = i
-  })
-  return idx
 }
 
 function parseSeconds(len) {
@@ -488,6 +467,20 @@ function ensureBoss(list) {
       year: 1975,
     },
   ]
+}
+
+function collectOrigins(list) {
+  return Array.from(new Set(list.map((s) => s.origin).filter(Boolean))).sort((a, b) =>
+    a.localeCompare(b),
+  )
+}
+
+export function filterSongsByOrigin(list, allowedOrigins) {
+  if (!allowedOrigins || !allowedOrigins.length) return ensureBoss(list)
+  const allowed = new Set(allowedOrigins)
+  const filtered = list.filter((s) => !s.origin || allowed.has(s.origin))
+  if (!filtered.length) return ensureBoss(list)
+  return ensureBoss(filtered)
 }
 
 function pickShopRows(totalRows, rng) {

@@ -12,6 +12,11 @@ Long Way To The Top is a terminal-first roguelike that swaps combat for rhythm. 
 2) Install dependencies: `go mod tidy`
 3) Run the prototype: `go run ./cmd/longway`
 
+### Web client (React)
+- `cd web && npm install`
+- Run the client with `npm run dev` (Vite defaults to <http://localhost:5173>).
+- Run web tests with `npm test -- --run`.
+
 Controls in the prototype:
 - `space`: pause/resume the climb
 - `n`: move to the next stage of the route
