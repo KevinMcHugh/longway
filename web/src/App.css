@@ -401,6 +401,9 @@ h1 {
   color: #e2e8f0;
   font-weight: 700;
   margin-bottom: 0.4rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .origin-groups {
@@ -420,6 +423,15 @@ h1 {
   font-weight: 700;
   color: #cbd5e1;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.origin-series-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
 }
 
 .origin-list {

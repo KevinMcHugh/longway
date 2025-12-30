@@ -403,6 +403,14 @@ function App() {
                     />
                   </label>
                 </div>
+                <div className="dialog-actions">
+                  <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
+                    Cancel
+                  </button>
+                  <button className="primary" type="button" onClick={confirmNewGame}>
+                    Start
+                  </button>
+                </div>
                 <div className="form-row">
                   <p className="select-label">Song origins</p>
                   <div className="origin-controls">
@@ -434,7 +442,7 @@ function App() {
                         return (
                           <details key={group.series} className="origin-group" open>
                             <summary className="origin-series">
-                              <label className="checkbox-row">
+                              <label className="checkbox-row origin-series-row">
                                 <input
                                   type="checkbox"
                                   checked={allSelected}
@@ -466,14 +474,6 @@ function App() {
                       })}
                     </div>
                   </details>
-                </div>
-                <div className="dialog-actions">
-                  <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
-                    Cancel
-                  </button>
-                  <button className="primary" type="button" onClick={confirmNewGame}>
-                    Start
-                  </button>
                 </div>
               </div>
             </div>
