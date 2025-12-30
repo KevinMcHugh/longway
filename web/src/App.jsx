@@ -74,7 +74,7 @@ function App() {
   const [ gameOver, setGameOver ] = useState(false)
   const [ newGameOpen, setNewGameOpen ] = useState(false)
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
-  const [ pendingSeed, setPendingSeed ] = useState(String(seed))
+  const [ pendingSeed, setPendingSeed ] = useState('')
   const [ pendingOrigins, setPendingOrigins ] = useState(selectedOrigins)
   const [ shopOffers, setShopOffers ] = useState(
     savedState?.shopOffers ?? generateShopOffers(acts, seed),
@@ -608,7 +608,7 @@ function App() {
 
   function openNewGame() {
     setPendingInstrument(instrument)
-    setPendingSeed(String(seed))
+    setPendingSeed('')
     setPendingOrigins(selectedOrigins)
     setNewGameOpen(true)
   }
