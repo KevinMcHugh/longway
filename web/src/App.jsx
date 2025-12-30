@@ -442,6 +442,7 @@ function App() {
                         return (
                           <details key={group.series} className="origin-group" open>
                             <summary className="origin-series">
+                              <span className="collapse-icon" aria-hidden="true">▾</span>
                               <label className="checkbox-row origin-series-row">
                                 <input
                                   type="checkbox"

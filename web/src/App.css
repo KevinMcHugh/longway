@@ -425,6 +425,7 @@ h1 {
   cursor: pointer;
   display: flex;
   align-items: center;
+  gap: 0.35rem;
 }
 
 .origin-series-row {
@@ -432,6 +433,15 @@ h1 {
   display: flex;
   align-items: center;
   gap: 0.35rem;
+}
+
+.collapse-icon {
+  transition: transform 0.15s ease;
+  display: inline-block;
+}
+
+.origin-group:not([open]) .collapse-icon {
+  transform: rotate(-90deg);
 }
 
 .origin-list {
