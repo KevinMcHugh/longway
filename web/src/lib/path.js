@@ -420,14 +420,14 @@ function parseSongsJson(list) {
         diff_vocals: clampDifficulty(Number(raw.diff_vocals)),
         diff_keys: clampDifficulty(Number(raw.diff_keys)),
         diff_rhythm: clampDifficulty(Number(raw.diff_rhythm)),
-        source_included: Boolean(raw.source_included),
+        source_included: raw.source_included !== false,
         supports_guitar: Boolean(raw.supports_guitar),
         supports_bass: Boolean(raw.supports_bass),
         supports_drums: Boolean(raw.supports_drums),
         supports_vocals: Boolean(raw.supports_vocals),
       }
     })
-    .filter((s) => s.title)
+    .filter((s) => s.title && s.source_included !== false)
 }
 
 function parseSeconds(len) {
@@ -476,10 +476,11 @@ function collectOrigins(list) {
 }
 
 export function filterSongsByOrigin(list, allowedOrigins) {
-  if (!allowedOrigins || !allowedOrigins.length) return ensureBoss(list)
+  const base = list.filter((s) => s.source_included !== false)
+  if (!allowedOrigins || !allowedOrigins.length) return ensureBoss(base)
   const allowed = new Set(allowedOrigins)
-  const filtered = list.filter((s) => !s.origin || allowed.has(s.origin))
-  if (!filtered.length) return ensureBoss(list)
+  const filtered = base.filter((s) => !s.origin || allowed.has(s.origin))
+  if (!filtered.length) return ensureBoss(base)
   return ensureBoss(filtered)
 }
 

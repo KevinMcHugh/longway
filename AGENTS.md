@@ -11,7 +11,7 @@
 - Write small, purposeful commits; describe intent and behavior changes in commit messages.
 - Format with `gofmt`; avoid non-ASCII unless the file already uses it intentionally.
 - Every change should land with tests that cover the behavior; if a test cannot be written, call it out explicitly and explain why.
-- Once tests pass, create a commit—do not leave finished work uncommitted. Keep the subject short, start with a present-tense verb, and use a longer body to explain the change and its motivation.
+- Once tests pass, create a commit—do not leave finished work uncommitted. Keep the subject short, start with a present-tense verb, and use a longer body to explain the change and its motivation. If multiple features land together, group them logically but avoid huge omnibus commits.
 - Split code by responsibility (e.g., UI, challenges, song data, world generation) instead of accumulating logic in `main.go`; keep helpers close to their domain.
 - Maintain `docs/` with short write-ups for each feature shipped; update docs alongside code so they never fall behind behavior.
 

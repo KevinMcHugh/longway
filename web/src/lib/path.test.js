@@ -140,4 +140,14 @@ describe('path generation', () => {
   it('exposes available song origins', () => {
     expect(songOrigins.length).toBeGreaterThan(0)
   })
+
+  it('drops songs explicitly marked as not included', () => {
+    const list = [
+      { id: 'keep', title: 'Keep Me', source_included: true },
+      { id: 'drop', title: 'Drop Me', source_included: false },
+    ]
+    const parsed = filterSongsByOrigin(list, null)
+    expect(parsed.some((s) => s.id === 'drop')).toBe(false)
+    expect(parsed.some((s) => s.id === 'keep')).toBe(true)
+  })
 })
