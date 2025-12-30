@@ -427,26 +427,43 @@ function App() {
                   <details className="origin-collapsible" open>
                     <summary className="origin-summary">Origins ({pendingOrigins.length})</summary>
                     <div className="origin-groups">
-                      {originGroups.map((group) => (
-                        <div key={group.series} className="origin-group">
-                          <p className="origin-series">{group.series}</p>
-                          <div className="origin-list">
-                            {group.origins.map((origin) => {
-                              const checked = pendingOrigins.includes(origin)
-                              return (
-                                <label key={origin} className="checkbox-row">
-                                  <input
-                                    type="checkbox"
-                                    checked={checked}
-                                    onChange={() => togglePendingOrigin(origin)}
-                                  />
-                                  <span>{origin}</span>
-                                </label>
-                              )
-                            })}
-                          </div>
-                        </div>
-                      ))}
+                      {originGroups.map((group) => {
+                        const allSelected = group.origins.every((o) => pendingOrigins.includes(o))
+                        const someSelected =
+                          !allSelected && group.origins.some((o) => pendingOrigins.includes(o))
+                        return (
+                          <details key={group.series} className="origin-group" open>
+                            <summary className="origin-series">
+                              <label className="checkbox-row">
+                                <input
+                                  type="checkbox"
+                                  checked={allSelected}
+                                  ref={(el) => {
+                                    if (el) el.indeterminate = someSelected
+                                  }}
+                                  onChange={() => toggleSeries(group.origins, allSelected)}
+                                />
+                                <span>{group.series}</span>
+                              </label>
+                            </summary>
+                            <div className="origin-list">
+                              {group.origins.map((origin) => {
+                                const checked = pendingOrigins.includes(origin)
+                                return (
+                                  <label key={origin} className="checkbox-row">
+                                    <input
+                                      type="checkbox"
+                                      checked={checked}
+                                      onChange={() => togglePendingOrigin(origin)}
+                                    />
+                                    <span>{origin}</span>
+                                  </label>
+                                )
+                              })}
+                            </div>
+                          </details>
+                        )
+                      })}
                     </div>
                   </details>
                 </div>
@@ -556,6 +573,17 @@ function App() {
         return prev.filter((o) => o !== origin)
       }
       return [ ...prev, origin ]
+    })
+  }
+
+  function toggleSeries(origins, currentlyAllSelected) {
+    setPendingOrigins((prev) => {
+      if (currentlyAllSelected) {
+        const remaining = prev.filter((o) => !origins.includes(o))
+        return remaining.length ? remaining : prev
+      }
+      const merged = new Set([ ...prev, ...origins ])
+      return Array.from(merged)
     })
   }
 
