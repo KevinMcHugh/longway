@@ -533,6 +533,7 @@ function App() {
     const { remaining: nextVoltage } = applyVoltageLoss(voltage, starEntries, {
       max: maxStars,
       penaltyPerMissingStar: voltagePenaltyPerMissingStar,
+      goal: selectedNode?.challenge?.goal,
     })
     setVoltage(nextVoltage)
     setResults((prev) => ({
@@ -813,8 +814,18 @@ export function meetsGoal(goal, entries) {
   return avg >= goal
 }
 
-export function calculateVoltageLoss(entries, { max = maxStars, penaltyPerMissingStar = voltagePenaltyPerMissingStar } = {}) {
+export function calculateVoltageLoss(
+  entries,
+  { max = maxStars, penaltyPerMissingStar = voltagePenaltyPerMissingStar, goal } = {},
+) {
   if (!entries || !entries.length) return 0
+  if (goal) {
+    const nums = entries.map((n) => Number(n)).filter((n) => !Number.isNaN(n))
+    if (!nums.length) return 0
+    const avg = nums.reduce((a, b) => a + b, 0) / nums.length
+    const deficit = Math.max(0, Math.ceil(goal - avg))
+    return deficit * penaltyPerMissingStar
+  }
   return entries.reduce((total, entry) => {
     const stars = Math.max(0, Math.min(max, Number(entry) || 0))
     const missing = max - stars

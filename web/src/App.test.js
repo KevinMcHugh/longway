@@ -185,15 +185,22 @@ describe('meetsGoal', () => {
   })
 })
 
-describe('voltage tracking', () => {
-  it('charges 1000 volts per missing star', () => {
-    const loss = calculateVoltageLoss([6, 5, 0])
-    expect(loss).toBe(7000)
+  describe('voltage tracking', () => {
+  it('charges 1000 volts per missing star (goal-based average)', () => {
+    const loss = calculateVoltageLoss([6, 5, 0], { goal: 6 })
+    expect(loss).toBe(3000)
   })
 
   it('never drops below zero after applying loss', () => {
-    const { remaining, loss } = applyVoltageLoss(2000, [0, 0, 0])
-    expect(loss).toBe(18000)
+    const { remaining, loss } = applyVoltageLoss(2000, [0, 0, 0], { goal: 6 })
+    expect(loss).toBe(6000)
     expect(remaining).toBe(0)
+  })
+
+  it('respects goal averages when charging loss', () => {
+    const loss = calculateVoltageLoss([2, 4], { goal: 3 })
+    expect(loss).toBe(0)
+    const lossBelow = calculateVoltageLoss([1, 2], { goal: 3 })
+    expect(lossBelow).toBe(2000)
   })
 })
