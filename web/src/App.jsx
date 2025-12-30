@@ -145,6 +145,7 @@ function App() {
   const selectTarget = selectedNode?.challenge?.selectCount ?? 1
   const readyToEnter = selectedSongs.length === selectTarget
   const shopInventory = shopOffers[ resultsKey(selected.act, selected.row) ]
+  const voltagePct = Math.max(0, Math.min(100, (voltage / startingVoltage) * 100))
   const action =
     gameOver && selectedNode?.kind !== 'boss'
       ? null
@@ -172,6 +173,12 @@ function App() {
             <p className="eyebrow">Voltage</p>
             <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
               {voltage.toLocaleString()} V
+            </div>
+            <div className="voltage-bar" aria-label="Voltage remaining">
+              <div
+                className={`voltage-bar-fill ${voltage <= lowVoltageThreshold ? 'voltage-bar-low' : ''}`}
+                style={{ width: `${voltagePct}%` }}
+              />
             </div>
           </div>
           <div className="seed">
