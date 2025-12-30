@@ -1,40 +1,42 @@
-source,included,supports_guitar,supports_bass,supports_drums,supports_vocals
-311 Hero,false,,,,,
-Archived Charts,false,,,,,
-Band Hero,true,true,true,true,true
-Green Day Rock Band DLC,true,true,true,true,true
-Green Day Rock Band,true,true,true,true,true
-Guitar Hero - Rock The 80s (6 Fret),false,true,true,true,true
-Guitar Hero 5 DLC,true,true,true,true,true
-Guitar Hero 5 Hidden Songs,true,true,true,true,true
-Guitar Hero 5,true,true,true,true,true
-Guitar Hero Aerosmith,true,true,true,true,true
-Guitar Hero Encore: Rocks the 80s,false,true,false,false,false
-Guitar Hero I,false,true,false,false,false
-Guitar Hero II (Late 06 Retail Demo),false,true,false,false,false
-Guitar Hero II (Official PlayStation Magazine Demo),false,true,false,false,false
-Guitar Hero II (Tutorials),false,true,false,false,false
-Guitar Hero II DLC,true,true,false,false,false
-Guitar Hero II,true,true,false,false,false
-Guitar Hero III - Legends of Rock,true,true,false,false,false
-Guitar Hero III DLC,true,true,false,false,false
-Guitar Hero Metallica DLC,true,true,true,true,true
-Guitar Hero Metallica,true,true,true,true,true
-Guitar Hero World Tour DLC,true,true,true,true,true
-Guitar Hero World Tour,true,true,true,true,true
-Guitar Hero: Van Halen,true,true,true,true,true
-Guitar Hero: Warriors of Rock DLC,true,true,true,true,true
-Guitar Hero: Warriors of Rock,true,true,true,true,true
-Lego Rock Band,true,true,true,true,true
-Neversoft & Harmonix Series Extras,false,true,true,true,true
-Rock Band 1 DLC,true,true,true,true,true
-Rock Band 1,true,true,true,true,true
-Rock Band 2 DLC,true,true,true,true,true
-Rock Band 2,true,true,true,true,true
-Rock Band 3 DLC,true,true,true,true,true
-Rock Band 3,true,true,true,true,true
-Rock Band 4,true,true,true,true,true
-Rock Band ACDC Live Track Pack,true,true,true,true,true
-Rock Band Blitz,true,true,true,true,true
-Rock Band Network,true,true,true,true,true
-Rock Band Rivals,true,true,true,true,true
+source,series,included,supports_guitar,supports_bass,supports_drums,supports_vocals
+311 Hero,customs,false,,,,,
+Archived Charts,customs,false,,,,,
+Band Hero,Guitar Hero,true,true,true,true,true
+Green Day Rock Band DLC,Rock Band,true,true,true,true,true
+Green Day Rock Band,Rock Band,true,true,true,true,true
+Guitar Hero - Rock The 80s (6 Fret),Guitar Hero,false,true,true,true,true
+Guitar Hero 5 DLC,Guitar Hero,true,true,true,true,true
+Guitar Hero 5 Hidden Songs,Guitar Hero,true,true,true,true,true
+Guitar Hero 5,Guitar Hero,true,true,true,true,true
+Guitar Hero Aerosmith,Guitar Hero,true,true,true,true,true
+Guitar Hero Encore: Rocks the 80s,Guitar Hero,true,true,false,false,false
+Guitar Hero I,Guitar Hero,true,true,false,false,false
+Guitar Hero II (Late 06 Retail Demo),Guitar Hero,false,true,false,false,false
+Guitar Hero II (Official PlayStation Magazine Demo),Guitar Hero,false,true,false,false,false
+Guitar Hero II (Tutorials),Guitar Hero,false,true,false,false,false
+Guitar Hero II DLC,Guitar Hero,true,true,false,false,false
+Guitar Hero II,Guitar Hero,true,true,false,false,false
+Guitar Hero III - Legends of Rock,Guitar Hero,true,true,false,false,false
+Guitar Hero III DLC,Guitar Hero,true,true,false,false,false
+Guitar Hero Metallica DLC,Guitar Hero,true,true,true,true,true
+Guitar Hero Metallica,Guitar Hero,true,true,true,true,true
+Guitar Hero World Tour DLC,Guitar Hero,true,true,true,true,true
+Guitar Hero World Tour,Guitar Hero,true,true,true,true,true
+Guitar Hero: Van Halen,Guitar Hero,true,true,true,true,true
+Guitar Hero: Warriors of Rock DLC,Guitar Hero,true,true,true,true,true
+Guitar Hero: Warriors of Rock,Guitar Hero,true,true,true,true,true
+Lego Rock Band,Rock Band,true,true,true,true,true
+Neversoft & Harmonix Series Extras,Extras,false,true,true,true,true
+Rock Band 1 DLC,Rock Band,true,true,true,true,true
+Rock Band 1,Rock Band,true,true,true,true,true
+Rock Band 2 DLC,Rock Band,true,true,true,true,true
+Rock Band 2,Rock Band,true,true,true,true,true
+Rock Band 3 DLC,Rock Band,true,true,true,true,true
+Rock Band 3,Rock Band,true,true,true,true,true
+Rock Band 4,Rock Band,true,true,true,true,true
+Rock Band ACDC Live Track Pack,Rock Band,true,true,true,true,true
+Rock Band Blitz,Rock Band,true,true,true,true,true
+Rock Band Network,Rock Band,false,true,true,true,true
+Rock Band Rivals,Rock Band,true,true,true,true,true
+The Beatles Rock Band,Rock Band,true,true,true,true,true
+The Beatles Rock Band DLC,Rock Band,true,true,true,true,true
