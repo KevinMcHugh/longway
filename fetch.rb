@@ -1,27 +1,7 @@
 require 'json'
 require 'csv'
 require 'fileutils'
-
-def truthy?(value)
-  value.to_s.strip.downcase == 'true'
-end
-
-def load_source_info(path)
-  return {} unless File.exist?(path)
-  info = {}
-  CSV.foreach(path, headers: true) do |row|
-    source = row['source']&.strip
-    next if source.nil? || source.empty?
-    info[source] = {
-      included: truthy?(row['included']),
-      supports_guitar: truthy?(row['supports_guitar']),
-      supports_bass: truthy?(row['supports_bass']),
-      supports_drums: truthy?(row['supports_drums']),
-      supports_vocals: truthy?(row['supports_vocals'])
-    }
-  end
-  info
-end
+require_relative './process'
 
 def get_page(charter, year, page_number)
   curl = <<-EOS
@@ -141,11 +121,4 @@ end
 
 puts "Wrote #{rows.length} songs to #{output}"
 
-web_output = File.join('web', 'src', 'data', 'downloaded_songs.csv')
-
-json_output = 'downloaded_songs.json'
-File.write(json_output, JSON.pretty_generate(rows))
-web_json_output = File.join('web', 'src', 'data', 'downloaded_songs.json')
-FileUtils.mkdir_p(File.dirname(web_json_output))
-FileUtils.cp(json_output, web_json_output)
-puts "Wrote #{json_output} and copied to #{web_json_output}"
+process_csv(output, 'downloaded_songs.json', File.join('web', 'src', 'data', 'downloaded_songs.json'))

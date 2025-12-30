@@ -10,7 +10,7 @@ const startingVoltage = 10000
 const voltagePenaltyPerMissingStar = 1000
 const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
-const gearSlots = ['Shirt', 'Pants', 'Instrument', 'Amplifier']
+const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [
   { value: 'band', label: 'Band' },
   { value: 'guitar', label: 'Guitar' },
@@ -42,41 +42,41 @@ const gearOptions = {
 function App() {
   const savedState = useMemo(() => readSavedState(), [])
   const initialSeed = savedState?.seed ?? Date.now()
-  const [seed, setSeed] = useState(initialSeed)
-  const [instrument, setInstrument] = useState(savedState?.instrument ?? 'band')
-  const [selectedOrigins, setSelectedOrigins] = useState(
+  const [ seed, setSeed ] = useState(initialSeed)
+  const [ instrument, setInstrument ] = useState(savedState?.instrument ?? 'band')
+  const [ selectedOrigins, setSelectedOrigins ] = useState(
     savedState?.selectedOrigins?.length ? savedState.selectedOrigins : songOrigins,
   )
   const { acts } = useMemo(
     () => generateRun(seed, instrument, selectedOrigins),
-    [seed, instrument, selectedOrigins],
+    [ seed, instrument, selectedOrigins ],
   )
-  const [currentAct, setCurrentAct] = useState(savedState?.currentAct ?? 0)
-  const [selected, setSelected] = useState(
+  const [ currentAct, setCurrentAct ] = useState(savedState?.currentAct ?? 0)
+  const [ selected, setSelected ] = useState(
     clampSelection(savedState?.selected ?? { act: 0, row: 0, col: 0 }, acts),
   )
-  const [phase, setPhase] = useState(savedState?.phase ?? 'idle') // idle | selecting | entering | done
-  const [currentRow, setCurrentRow] = useState(
+  const [ phase, setPhase ] = useState(savedState?.phase ?? 'idle') // idle | selecting | entering | done
+  const [ currentRow, setCurrentRow ] = useState(
     clampRow(savedState?.currentRow ?? 0, acts, savedState?.currentAct ?? 0),
   )
-  const [choices, setChoices] = useState(savedState?.choices ?? {})
-  const [selectedSongs, setSelectedSongs] = useState(() =>
+  const [ choices, setChoices ] = useState(savedState?.choices ?? {})
+  const [ selectedSongs, setSelectedSongs ] = useState(() =>
     restoreSelectedSongs(savedState?.selectedSongIds, acts, savedState?.selected),
   )
-  const [starEntries, setStarEntries] = useState(savedState?.starEntries ?? [])
-  const [results, setResults] = useState(() => restoreResults(savedState?.results))
-  const [gear, setGear] = useState(savedState?.gear ?? defaultGear())
-  const [voltage, setVoltage] = useState(savedState?.voltage ?? startingVoltage)
+  const [ starEntries, setStarEntries ] = useState(savedState?.starEntries ?? [])
+  const [ results, setResults ] = useState(() => restoreResults(savedState?.results))
+  const [ gear, setGear ] = useState(savedState?.gear ?? defaultGear())
+  const [ voltage, setVoltage ] = useState(savedState?.voltage ?? startingVoltage)
   const hydrated = useRef(false)
   const prevAct = useRef(currentAct)
-  const [loadedFromStorage] = useState(Boolean(savedState))
-  const [lastSaved, setLastSaved] = useState(savedState?.lastSaved ?? null)
-  const [gameOver, setGameOver] = useState(false)
-  const [newGameOpen, setNewGameOpen] = useState(false)
-  const [pendingInstrument, setPendingInstrument] = useState(instrument)
-  const [pendingSeed, setPendingSeed] = useState(String(seed))
-  const [pendingOrigins, setPendingOrigins] = useState(selectedOrigins)
-  const [shopOffers, setShopOffers] = useState(
+  const [ loadedFromStorage ] = useState(Boolean(savedState))
+  const [ lastSaved, setLastSaved ] = useState(savedState?.lastSaved ?? null)
+  const [ gameOver, setGameOver ] = useState(false)
+  const [ newGameOpen, setNewGameOpen ] = useState(false)
+  const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
+  const [ pendingSeed, setPendingSeed ] = useState(String(seed))
+  const [ pendingOrigins, setPendingOrigins ] = useState(selectedOrigins)
+  const [ shopOffers, setShopOffers ] = useState(
     savedState?.shopOffers ?? generateShopOffers(acts, seed),
   )
 
@@ -94,7 +94,7 @@ function App() {
       setStarEntries([])
       setCurrentRow(0)
     }
-  }, [currentAct])
+  }, [ currentAct ])
 
   useEffect(() => {
     const now = Date.now()
@@ -135,30 +135,30 @@ function App() {
     selectedOrigins,
   ])
 
-  const current = acts[currentAct]
+  const current = acts[ currentAct ]
   const selectedNode =
-    current?.rows[selected.row]?.find((n) => n.col === selected.col) ?? current?.rows[0]?.[0]
+    current?.rows[ selected.row ]?.find((n) => n.col === selected.col) ?? current?.rows[ 0 ]?.[ 0 ]
   const startEnabled =
     isReachable(selected, choices, current, currentRow, currentAct) && selected.row === currentRow
   const canAdvanceRow = phase === 'done' && currentRow < current.rows.length - 1
   const canAdvanceAct = phase === 'done' && currentRow === current.rows.length - 1 && currentAct < acts.length - 1
   const selectTarget = selectedNode?.challenge?.selectCount ?? 1
   const readyToEnter = selectedSongs.length === selectTarget
-  const shopInventory = shopOffers[resultsKey(selected.act, selected.row)]
+  const shopInventory = shopOffers[ resultsKey(selected.act, selected.row) ]
   const action =
     gameOver && selectedNode?.kind !== 'boss'
       ? null
       : selectedNode?.kind === 'shop'
         ? { kind: 'advance', label: 'Leave shop', disabled: !startEnabled }
         : actionForState({
-            phase,
-            hasSelection: selectedSongs.length > 0,
-            canEnter: readyToEnter,
-            starsComplete: starsComplete(),
-            canAdvanceRow,
-            canAdvanceAct,
-            startEnabled,
-          })
+          phase,
+          hasSelection: selectedSongs.length > 0,
+          canEnter: readyToEnter,
+          starsComplete: starsComplete(),
+          canAdvanceRow,
+          canAdvanceAct,
+          startEnabled,
+        })
 
   return (
     <main className="app">
@@ -208,7 +208,7 @@ function App() {
               {gearSlots.map((slot) => (
                 <li key={slot} className="gear-tile">
                   <div className="gear-slot">{slot}</div>
-                  <div className="gear-name">{gear[slot]?.name ?? 'None'}</div>
+                  <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
                 </li>
               ))}
             </ul>
@@ -238,7 +238,7 @@ function App() {
                   {shopInventory ? (
                     <div className="shop-grid">
                       {shopInventory.map((item) => {
-                        const equipped = gear[item.slot]?.id === item.id
+                        const equipped = gear[ item.slot ]?.id === item.id
                         return (
                           <div key={item.id} className="shop-slot">
                             <p className="meta">
@@ -281,9 +281,8 @@ function App() {
                         <li key={`${s.id}-${s.title}`}>
                           <button
                             type="button"
-                            className={`song-row ${
-                              phase === 'selecting' && isSelected ? 'song-row-selected' : ''
-                            }`}
+                            className={`song-row ${phase === 'selecting' && isSelected ? 'song-row-selected' : ''
+                              }`}
                             onClick={toggleAllowed ? () => toggleSongSelection(s) : undefined}
                             disabled={!toggleAllowed}
                           >
@@ -309,17 +308,17 @@ function App() {
                           </button>
                           {phase === 'entering' && isSelected ? (
                             <StarPicker
-                              value={starEntries[selectedIdx]}
+                              value={starEntries[ selectedIdx ]}
                               onChange={(val) => updateStarEntry(selectedIdx, val)}
                               max={maxStars}
                             />
                           ) : null}
                           {phase === 'done' &&
-                          resultsKey(selected.act, selected.row) in results &&
-                          isSelected ? (
+                            resultsKey(selected.act, selected.row) in results &&
+                            isSelected ? (
                             <span className="meta">
                               {renderStars(
-                                results[resultsKey(selected.act, selected.row)].stars[selectedIdx],
+                                results[ resultsKey(selected.act, selected.row) ].stars[ selectedIdx ],
                               )}
                             </span>
                           ) : null}
@@ -419,7 +418,7 @@ function App() {
                       className="ghost"
                       onClick={() => {
                         if (pendingOrigins.length === 1) return
-                        setPendingOrigins((prev) => (prev.length ? [] : [...songOrigins]))
+                        setPendingOrigins((prev) => (prev.length ? [] : [ ...songOrigins ]))
                       }}
                     >
                       Clear
@@ -443,9 +442,6 @@ function App() {
                       })}
                     </div>
                   </details>
-                  <p className="meta">
-                    At least one origin must remain selected. Choices persist between runs.
-                  </p>
                 </div>
                 <div className="dialog-actions">
                   <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
@@ -477,7 +473,7 @@ function App() {
   function startChallenge() {
     setChoices((prev) => ({
       ...prev,
-      [currentAct]: { ...(prev[currentAct] || {}), [selected.row]: selected.col },
+      [ currentAct ]: { ...(prev[ currentAct ] || {}), [ selected.row ]: selected.col },
     }))
     setPhase('selecting')
     setSelectedSongs([])
@@ -493,8 +489,8 @@ function App() {
   function updateStarEntry(idx, value) {
     const parsed = Math.max(0, Math.min(6, Number(value)))
     setStarEntries((prev) => {
-      const next = [...prev]
-      next[idx] = Number.isNaN(parsed) ? '' : parsed
+      const next = [ ...prev ]
+      next[ idx ] = Number.isNaN(parsed) ? '' : parsed
       return next
     })
   }
@@ -502,7 +498,7 @@ function App() {
   function starsComplete() {
     return (
       selectedSongs.length === selectTarget &&
-      selectedSongs.every((_, idx) => starEntries[idx] !== undefined && starEntries[idx] !== '')
+      selectedSongs.every((_, idx) => starEntries[ idx ] !== undefined && starEntries[ idx ] !== '')
     )
   }
 
@@ -516,7 +512,7 @@ function App() {
     setVoltage(nextVoltage)
     setResults((prev) => ({
       ...prev,
-      [key]: {
+      [ key ]: {
         stars: starEntries.map((v) => Number(v)),
       },
     }))
@@ -530,9 +526,9 @@ function App() {
   function advanceRow() {
     const nextRow = currentRow + 1
     if (nextRow >= current.rows.length) return
-    const prevChoice = choices[currentAct]?.[currentRow] ?? selected.col
-    const edges = current.rows[currentRow][prevChoice]?.edges || []
-    const nextCol = edges[0] ?? 0
+    const prevChoice = choices[ currentAct ]?.[ currentRow ] ?? selected.col
+    const edges = current.rows[ currentRow ][ prevChoice ]?.edges || []
+    const nextCol = edges[ 0 ] ?? 0
     setCurrentRow(nextRow)
     setSelected({ act: currentAct, row: nextRow, col: nextCol })
     setPhase('idle')
@@ -552,7 +548,7 @@ function App() {
         if (prev.length === 1) return prev
         return prev.filter((o) => o !== origin)
       }
-      return [...prev, origin]
+      return [ ...prev, origin ]
     })
   }
 
@@ -592,7 +588,7 @@ function App() {
   function equipGear(slot, item) {
     setGear((prev) => ({
       ...prev,
-      [slot]: item,
+      [ slot ]: item,
     }))
   }
 }
@@ -603,10 +599,10 @@ function resultsKey(act, row) {
 
 function reachableCols(act, row, choices, actIndex) {
   if (!act) return []
-  if (row === 0) return act.rows[0].map((n) => n.col)
-  const prevChoice = choices[actIndex]?.[row - 1] ?? 0
-  const prevRow = act.rows[row - 1] || []
-  const node = prevRow.find((n) => n.col === prevChoice) || prevRow[0]
+  if (row === 0) return act.rows[ 0 ].map((n) => n.col)
+  const prevChoice = choices[ actIndex ]?.[ row - 1 ] ?? 0
+  const prevRow = act.rows[ row - 1 ] || []
+  const node = prevRow.find((n) => n.col === prevChoice) || prevRow[ 0 ]
   return node?.edges || []
 }
 
@@ -638,7 +634,7 @@ function ActView({ act, selected, onSelect, reachable }) {
 
 function RowView({ row, rowIdx, rows, onSelect, selected, reachable }) {
   const y = (rows.length - 1 - rowIdx) * rowSpacing
-  const nextRow = rows[rowIdx + 1]
+  const nextRow = rows[ rowIdx + 1 ]
   const allowed =
     reachable && reachable.row === rowIdx ? reachable.cols || [] : []
   return (
@@ -660,7 +656,7 @@ function RowView({ row, rowIdx, rows, onSelect, selected, reachable }) {
           (node.edges || []).map((target) => {
             const startX = node.col * colSpacing + nodeSize / 2
             const startY = y + nodeSize / 2
-            const targetNode = nextRow[target]
+            const targetNode = nextRow[ target ]
             if (!targetNode) return null
             const endX = targetNode.col * colSpacing + nodeSize / 2
             const endY = y - rowSpacing + nodeSize / 2
@@ -692,9 +688,8 @@ function NodeView({ node, x, y, selected, reachable, onSelect }) {
       onClick={reachable ? onSelect : undefined}
     >
       <div
-        className={`node node-${node.kind} ${selected ? 'node-selected' : ''} ${
-          reachable ? 'node-reachable' : 'node-disabled'
-        }`}
+        className={`node node-${node.kind} ${selected ? 'node-selected' : ''} ${reachable ? 'node-reachable' : 'node-disabled'
+          }`}
       >
         {node.kind === 'boss' ? 'B' : node.kind === 'shop' ? '$' : 'C'}
       </div>
@@ -748,7 +743,7 @@ export function toggleSong(current, song, { minSelectable, maxSelectable }) {
     return next
   }
   if (current.length >= maxSelectable) return current
-  return [...current, song]
+  return [ ...current, song ]
 }
 
 export function actionForState({
@@ -823,36 +818,36 @@ export function readSavedState() {
 
 export function clampSelection(sel, acts) {
   const actIndex = Math.min(Math.max(0, sel?.act ?? 0), acts.length - 1)
-  const act = acts[actIndex]
+  const act = acts[ actIndex ]
   const rows = act?.rows ?? []
   const rowIndex = Math.min(Math.max(0, sel?.row ?? 0), rows.length - 1)
-  const row = rows[rowIndex] || []
+  const row = rows[ rowIndex ] || []
   const colValue =
-    row.find((n) => n.col === (sel?.col ?? 0))?.col ?? (row[0]?.col ?? 0)
+    row.find((n) => n.col === (sel?.col ?? 0))?.col ?? (row[ 0 ]?.col ?? 0)
   return { act: actIndex, row: rowIndex, col: colValue }
 }
 
 export function clampRow(row, acts, actIndex) {
-  const act = acts[Math.min(Math.max(0, actIndex), acts.length - 1)]
+  const act = acts[ Math.min(Math.max(0, actIndex), acts.length - 1) ]
   if (!act) return 0
   return Math.min(Math.max(0, row), act.rows.length - 1)
 }
 
 export function restoreSelectedSongs(ids, acts, selected) {
   if (!ids || !Array.isArray(ids) || !selected) return []
-  const act = acts[selected.act]
-  const row = act?.rows?.[selected.row]
+  const act = acts[ selected.act ]
+  const row = act?.rows?.[ selected.row ]
   const node = row?.find((n) => n.col === selected.col)
   const songs = node?.challenge?.songs || []
-  const byId = new Map(songs.map((s) => [s.id, s]))
+  const byId = new Map(songs.map((s) => [ s.id, s ]))
   return ids.map((id) => byId.get(id)).filter(Boolean)
 }
 
 export function serializeResults(results) {
   if (!results) return {}
   const out = {}
-  Object.entries(results).forEach(([key, value]) => {
-    out[key] = { stars: value.stars }
+  Object.entries(results).forEach(([ key, value ]) => {
+    out[ key ] = { stars: value.stars }
   })
   return out
 }
@@ -860,8 +855,8 @@ export function serializeResults(results) {
 export function restoreResults(saved) {
   if (!saved || typeof saved !== 'object') return {}
   const out = {}
-  Object.entries(saved).forEach(([key, value]) => {
-    out[key] = { stars: value?.stars ?? [] }
+  Object.entries(saved).forEach(([ key, value ]) => {
+    out[ key ] = { stars: value?.stars ?? [] }
   })
   return out
 }
@@ -869,7 +864,7 @@ export function restoreResults(saved) {
 export function defaultGear() {
   const gear = {}
   gearSlots.forEach((slot) => {
-    gear[slot] = { id: `${slot}-none`, name: 'None', rarity: 'none' }
+    gear[ slot ] = { id: `${slot}-none`, name: 'None', rarity: 'none' }
   })
   return gear
 }
@@ -880,10 +875,10 @@ export function generateShopOffers(acts, seed) {
   const pool = weightedGearPool()
   acts.forEach((act) => {
     act.rows.forEach((row, rowIdx) => {
-      const node = row[0]
+      const node = row[ 0 ]
       if (node?.kind !== nodeKinds.shop) return
       const key = `${act.index - 1}-${rowIdx}`
-      offers[key] = pickGear(pool, 3, rng)
+      offers[ key ] = pickGear(pool, 3, rng)
     })
   })
   return offers
@@ -893,8 +888,8 @@ function weightedGearPool() {
   const weights = { common: 25, uncommon: 5, rare: 2, epic: 1 }
   const items = []
   gearSlots.forEach((slot) => {
-    (gearOptions[slot] || []).forEach((item) => {
-      const w = weights[item.rarity] ?? 1
+    (gearOptions[ slot ] || []).forEach((item) => {
+      const w = weights[ item.rarity ] ?? 1
       for (let i = 0; i < w; i++) {
         items.push(item)
       }
@@ -907,7 +902,7 @@ function pickGear(pool, count, rng) {
   const result = []
   const seen = new Set()
   while (result.length < count && result.length < pool.length) {
-    const item = pool[Math.floor(rng() * pool.length)]
+    const item = pool[ Math.floor(rng() * pool.length) ]
     if (seen.has(item.id)) continue
     seen.add(item.id)
     result.push(item)
