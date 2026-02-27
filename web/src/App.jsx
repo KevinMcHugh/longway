@@ -10,6 +10,9 @@ const startingVoltage = 10000
 const voltagePenaltyPerMissingStar = 1000
 const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
+const minCircle = 1
+const maxCircle = 9
+const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx) => minCircle + idx)
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [
   { value: 'band', label: 'Band' },
@@ -44,12 +47,13 @@ function App() {
   const initialSeed = savedState?.seed ?? Date.now()
   const [ seed, setSeed ] = useState(initialSeed)
   const [ instrument, setInstrument ] = useState(savedState?.instrument ?? 'band')
+  const [ circle, setCircle ] = useState(clampCircle(savedState?.circle ?? 1))
   const [ selectedOrigins, setSelectedOrigins ] = useState(
     savedState?.selectedOrigins?.length ? savedState.selectedOrigins : songOrigins,
   )
   const { acts } = useMemo(
-    () => generateRun(seed, instrument, selectedOrigins),
-    [ seed, instrument, selectedOrigins ],
+    () => generateRun(seed, instrument, selectedOrigins, circle),
+    [ seed, instrument, selectedOrigins, circle ],
   )
   const [ currentAct, setCurrentAct ] = useState(savedState?.currentAct ?? 0)
   const [ selected, setSelected ] = useState(
@@ -74,6 +78,7 @@ function App() {
   const [ gameOver, setGameOver ] = useState(false)
   const [ newGameOpen, setNewGameOpen ] = useState(false)
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
+  const [ pendingCircle, setPendingCircle ] = useState(circle)
   const [ pendingSeed, setPendingSeed ] = useState('')
   const [ pendingOrigins, setPendingOrigins ] = useState(selectedOrigins)
   const [ shopOffers, setShopOffers ] = useState(
@@ -111,6 +116,7 @@ function App() {
       lastSaved: now,
       gameOver,
       instrument,
+      circle,
       gear,
       shopOffers,
       voltage,
@@ -129,6 +135,7 @@ function App() {
     results,
     gameOver,
     instrument,
+    circle,
     gear,
     shopOffers,
     voltage,
@@ -170,6 +177,7 @@ function App() {
         </div>
         <div className="toolbar">
           <div className="act-label">Act {current?.index ?? 1}</div>
+          <div className="act-label">Circle {circle}</div>
             <div className="voltage-meter">
               <p className="eyebrow">Voltage</p>
               <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
@@ -403,6 +411,21 @@ function App() {
                 </div>
                 <div className="form-row">
                   <label className="select-label">
+                    Circle of Hell
+                    <select
+                      value={pendingCircle}
+                      onChange={(e) => setPendingCircle(clampCircle(Number(e.target.value)))}
+                    >
+                      {circleOptions.map((value) => (
+                        <option key={value} value={value}>
+                          Circle {value}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+                <div className="form-row">
+                  <label className="select-label">
                     Seed (optional)
                     <input
                       type="text"
@@ -597,9 +620,12 @@ function App() {
     const nextSeed = parseInt(pendingSeed || '', 10)
     const finalSeed = Number.isNaN(nextSeed) ? Date.now() : nextSeed
     const allowedOrigins = pendingOrigins?.length ? pendingOrigins : songOrigins
+    const nextCircle = clampCircle(pendingCircle)
+    const nextActs = generateRun(finalSeed, pendingInstrument, allowedOrigins, nextCircle).acts
     setSelectedOrigins(allowedOrigins)
     setSeed(finalSeed)
     setInstrument(pendingInstrument)
+    setCircle(nextCircle)
     setCurrentAct(0)
     setChoices({})
     setResults({})
@@ -610,12 +636,13 @@ function App() {
     setStarEntries([])
     setGameOver(false)
     setGear(defaultGear())
-    setShopOffers(generateShopOffers(acts, finalSeed))
+    setShopOffers(generateShopOffers(nextActs, finalSeed))
     setVoltage(startingVoltage)
   }
 
   function openNewGame() {
     setPendingInstrument(instrument)
+    setPendingCircle(circle)
     setPendingSeed('')
     setPendingOrigins(selectedOrigins)
     setNewGameOpen(true)
@@ -774,6 +801,12 @@ export function renderStars(count) {
   const clamped = Math.max(0, Math.min(maxStars, Math.round(count || 0)))
   if (clamped === 0) return '—'
   return '⭐️'.repeat(clamped)
+}
+
+export function clampCircle(value) {
+  const parsed = Number(value)
+  if (Number.isNaN(parsed)) return minCircle
+  return Math.max(minCircle, Math.min(maxCircle, Math.round(parsed)))
 }
 
 export function toggleSong(current, song, { minSelectable, maxSelectable }) {

@@ -11,6 +11,8 @@ import {
   songOrigins,
   originGroups,
   collectOriginGroups,
+  applyCircleIntensityConstraints,
+  circleIntensityBounds,
 } from './path'
 
 describe('path generation', () => {
@@ -162,5 +164,53 @@ describe('path generation', () => {
     const first = groups.find((g) => g.series === 'Series 1')
     expect(first.origins).toEqual(['A', 'B'])
     expect(originGroups.length).toBeGreaterThan(0)
+  })
+
+  it('maps circles to the documented intensity bounds', () => {
+    expect(circleIntensityBounds[1]).toEqual({ min: 0, max: 0 })
+    expect(circleIntensityBounds[7]).toEqual({ min: 0, max: 6 })
+    expect(circleIntensityBounds[8]).toEqual({ min: 3, max: 6 })
+    expect(circleIntensityBounds[9]).toEqual({ min: 5, max: 6 })
+  })
+
+  it('filters songs by circle intensity rules', () => {
+    const pool = [
+      { id: 's0', difficulty: 0 },
+      { id: 's2', difficulty: 2 },
+      { id: 's3', difficulty: 3 },
+      { id: 's5', difficulty: 5 },
+      { id: 's6', difficulty: 6 },
+    ]
+    expect(applyCircleIntensityConstraints(pool, 7).map((s) => s.id)).toEqual([
+      's0',
+      's2',
+      's3',
+      's5',
+      's6',
+    ])
+    expect(applyCircleIntensityConstraints(pool, 8).map((s) => s.id)).toEqual([
+      's3',
+      's5',
+      's6',
+    ])
+    expect(applyCircleIntensityConstraints(pool, 9).map((s) => s.id)).toEqual([
+      's5',
+      's6',
+    ])
+  })
+
+  it('keeps generated challenge songs inside circle 9 intensity limits', () => {
+    const { acts } = generateRun(2026, 'band', songOrigins, 9)
+    const challengeSongs = acts.flatMap((act) =>
+      act.rows.flatMap((row) =>
+        row
+          .filter((node) => node.kind !== nodeKinds.shop)
+          .flatMap((node) => node.challenge?.songs || []),
+      ),
+    )
+    expect(challengeSongs.length).toBeGreaterThan(0)
+    expect(challengeSongs.every((song) => song.difficulty >= 5 && song.difficulty <= 6)).toBe(
+      true,
+    )
   })
 })

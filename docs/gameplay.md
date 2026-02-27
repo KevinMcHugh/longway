@@ -7,6 +7,7 @@
 - **Star entry:** After committing, enter star rating `0-6` to log performance before moving to the next row.
 - **Voltage (run HP):** Runs start at 10,000 volts. Each missing star on submitted results costs 1,000 volts (floors at zero). Recovery will be added later.
 - **Song origins:** New games can filter the song pool by origin; selections persist between runs.
+- **Circles of Hell:** Run-level difficulty selection gates song intensity bands before challenge filters (see `docs/circles-of-hell.md`).
 - **Acts:** Only the current act is shown; switching acts resets selection state for that act while preserving the run seed.
 - **Persistence:** The web client autosaves to local storage and can start a fresh run with the “New game” button while keeping the seed indicator visible.
 

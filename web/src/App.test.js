@@ -13,6 +13,7 @@ import {
   defaultGear,
   calculateVoltageLoss,
   applyVoltageLoss,
+  clampCircle,
 } from './App'
 
 describe('song selection gating', () => {
@@ -185,7 +186,19 @@ describe('meetsGoal', () => {
   })
 })
 
-  describe('voltage tracking', () => {
+describe('clampCircle', () => {
+  it('clamps circle values to the 1-9 range', () => {
+    expect(clampCircle(0)).toBe(1)
+    expect(clampCircle(5)).toBe(5)
+    expect(clampCircle(99)).toBe(9)
+  })
+
+  it('falls back to circle 1 for invalid values', () => {
+    expect(clampCircle('oops')).toBe(1)
+  })
+})
+
+describe('voltage tracking', () => {
   it('charges 1000 volts per missing star (goal-based average)', () => {
     const loss = calculateVoltageLoss([6, 5, 0], { goal: 6 })
     expect(loss).toBe(3000)

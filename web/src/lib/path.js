@@ -24,11 +24,25 @@ const catalog = ensureBoss(parseSongsJson(songsJson))
 export const songs = catalog
 export const originGroups = collectOriginGroups(catalog)
 export const songOrigins = originGroups.flatMap((g) => g.origins)
+export const circleIntensityBounds = {
+  1: { min: 0, max: 0 },
+  2: { min: 0, max: 1 },
+  3: { min: 0, max: 2 },
+  4: { min: 0, max: 3 },
+  5: { min: 0, max: 4 },
+  6: { min: 0, max: 5 },
+  7: { min: 0, max: 6 },
+  8: { min: 3, max: 6 },
+  9: { min: 5, max: 6 },
+}
 
-export function generateRun(seed = Date.now(), _instrument, allowedOrigins) {
+export function generateRun(seed = Date.now(), _instrument, allowedOrigins, circle = 1) {
   const rng = mulberry32(seed)
   const acts = []
-  const filteredCatalog = filterSongsByOrigin(catalog, allowedOrigins)
+  const filteredCatalog = applyCircleIntensityConstraints(
+    filterSongsByOrigin(catalog, allowedOrigins),
+    circle,
+  )
   for (let i = 0; i < totalActs; i++) {
     acts.push(generateAct(i + 1, rng, filteredCatalog))
   }
@@ -37,6 +51,7 @@ export function generateRun(seed = Date.now(), _instrument, allowedOrigins) {
 
 function generateAct(index, rng, catalogSubset) {
   const filteredSongs = applyActDifficultyConstraints(index, catalogSubset)
+  const actPool = filteredSongs.length ? filteredSongs : catalogSubset
   const rows = []
   const shopRows = pickShopRows(rowsPerAct, rng)
 
@@ -59,7 +74,7 @@ function generateAct(index, rng, catalogSubset) {
     for (let col = 0; col < count; col++) {
       const isBoss = row === rowsPerAct - 1
       const isShop = shopRows.has(row)
-      const poolSize = pickPoolSize(index, filteredSongs.length, rng)
+      const poolSize = pickPoolSize(index, actPool.length, rng)
       const selectCount = pickSelectCount(rng)
       nodes.push({
         col,
@@ -68,7 +83,7 @@ function generateAct(index, rng, catalogSubset) {
           ? bossChallenge(index, catalogSubset)
           : isShop
             ? null
-            : challenge(filteredSongs, poolSize, selectCount, rng, index),
+            : challenge(actPool, poolSize, selectCount, rng, index),
         edges: [],
       })
     }
@@ -499,6 +514,21 @@ export function filterSongsByOrigin(list, allowedOrigins) {
   const filtered = base.filter((s) => !s.origin || allowed.has(s.origin))
   if (!filtered.length) return ensureBoss(base)
   return ensureBoss(filtered)
+}
+
+export function applyCircleIntensityConstraints(list, circle) {
+  const normalized = clampCircle(circle)
+  const bounds = circleIntensityBounds[normalized] ?? circleIntensityBounds[1]
+  return list.filter((song) => {
+    const intensity = clampDifficulty(Number(song.difficulty))
+    return intensity >= bounds.min && intensity <= bounds.max
+  })
+}
+
+function clampCircle(circle) {
+  const parsed = Number(circle)
+  if (Number.isNaN(parsed)) return 1
+  return Math.max(1, Math.min(9, Math.round(parsed)))
 }
 
 function pickShopRows(totalRows, rng) {
