@@ -92,7 +92,7 @@ function App() {
   )
   const [ mobileMode, setMobileMode ] = useState('map')
   const [ gearOpen, setGearOpen ] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth > smallMobileBreakpoint : true,
+    typeof window !== 'undefined' ? window.innerWidth >= mobileBreakpoint : true,
   )
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
   const [ pendingCircle, setPendingCircle ] = useState(circle)
@@ -120,10 +120,8 @@ function App() {
   }, [ isMobileView ])
 
   useEffect(() => {
-    if (isSmallMobileView) {
-      setGearOpen(false)
-    }
-  }, [ isSmallMobileView ])
+    setGearOpen(!isMobileView)
+  }, [ isMobileView ])
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -213,27 +211,23 @@ function App() {
     <main className={`app ${isMobileView ? 'app-mobile' : ''}`}>
       <header className="header">
         <div className="title-block">
-          <p className="eyebrow">Roguelike Rhythm Climb</p>
           <h1>A Long Way To The Top</h1>
-          <p className="lede">
-            Route your setlist, manage voltage, and survive the climb.
-          </p>
         </div>
         <div className="toolbar">
           <div className="run-badges">
             <div className="act-label">Act {current?.index ?? 1}</div>
             <div className="act-label">Circle {circle}</div>
-          </div>
-          <div className="voltage-meter">
-            <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
-              <span className="voltage-label">Voltage</span>
-              <span>{voltage.toLocaleString()} V</span>
-            </div>
-            <div className="voltage-bar" aria-label="Voltage remaining">
-              <div
-                className={`voltage-bar-fill ${voltageColorClass}`}
-                style={{ width: `${voltagePct}%` }}
-              />
+            <div className="voltage-meter">
+              <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
+                <span className="voltage-label">Voltage</span>
+                <span>{voltage.toLocaleString()} V</span>
+              </div>
+              <div className="voltage-bar" aria-label="Voltage remaining">
+                <div
+                  className={`voltage-bar-fill ${voltageColorClass}`}
+                  style={{ width: `${voltagePct}%` }}
+                />
+              </div>
             </div>
           </div>
           {!isMobileView ? (
