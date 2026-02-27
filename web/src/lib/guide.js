@@ -1,46 +1,70 @@
 export const GUIDE_STORAGE_KEY = 'longway-guide-v1'
 
-export const guideSteps = [
-  {
-    id: 'welcome',
-    title: 'Welcome to the Climb',
-    body: 'Pick a route on the map, clear each challenge row by row, and reach the top of every act.',
-  },
-  {
-    id: 'start',
-    title: 'Start a Challenge',
-    body: 'From Map mode, select a reachable node and press Start challenge.',
-  },
-  {
-    id: 'play-song',
-    title: 'Play Outside This App',
-    body: 'When a challenge starts, play the listed song(s) in your rhythm game, then return here to enter your star results.',
-  },
-  {
-    id: 'voltage',
-    title: 'Protect Your Voltage',
-    body: 'Missing goals drains voltage. Keep it above zero, advance rows, and watch for shop nodes to upgrade gear.',
-  },
-]
+export const guideFlows = {
+  intro: [
+    {
+      id: 'concept',
+      title: 'Roguelike + Rhythm',
+      body: 'This game is a roguelike strategy layer that sits alongside your existing rhythm game. Plan your route here, then perform songs there.',
+    },
+    {
+      id: 'select-challenge',
+      title: 'Choose Your First Node',
+      body: 'Open Map mode, select a reachable challenge node, and press Start challenge when ready.',
+    },
+  ],
+  'play-loop': [
+    {
+      id: 'play-loop',
+      title: 'Play Songs Outside This App',
+      body: 'Now play the selected song(s) in your rhythm game, then come back here to enter your star results.',
+    },
+  ],
+  'score-entry': [
+    {
+      id: 'score-entry',
+      title: 'Enter Your Results',
+      body: 'Use Enter stars to record your performance. Results decide voltage loss and whether your run continues.',
+    },
+  ],
+}
+
+export function getGuideFlow(flowId) {
+  return guideFlows[ flowId ] || []
+}
 
 export function readGuideState() {
   if (typeof localStorage === 'undefined') {
-    return { seen: false }
+    return { seen: {} }
   }
   const raw = localStorage.getItem(GUIDE_STORAGE_KEY)
-  if (!raw) return { seen: false }
+  if (!raw) return { seen: {} }
   try {
     const parsed = JSON.parse(raw)
-    return { seen: Boolean(parsed?.seen) }
+    const seen = parsed?.seen && typeof parsed.seen === 'object' ? parsed.seen : {}
+    return { seen }
   } catch (_) {
-    return { seen: false }
+    return { seen: {} }
   }
 }
 
-export function markGuideSeen() {
+export function hasSeenGuide(flowId) {
+  return Boolean(readGuideState().seen?.[ flowId ])
+}
+
+export function markGuideSeen(flowId) {
   if (typeof localStorage === 'undefined') return
   try {
-    localStorage.setItem(GUIDE_STORAGE_KEY, JSON.stringify({ seen: true }))
+    const current = readGuideState()
+    localStorage.setItem(
+      GUIDE_STORAGE_KEY,
+      JSON.stringify({
+        seen: {
+          ...current.seen,
+          [ flowId ]: true,
+        },
+      }),
+    )
   } catch (_) {
     // ignore storage errors
   }
