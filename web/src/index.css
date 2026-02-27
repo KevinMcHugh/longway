@@ -33,6 +33,21 @@
   --page-grad-2: rgba(255, 255, 255, 0.04);
 }
 
+:root[data-theme='hells-bells'] {
+  --background: 216 12% 7%;
+  --foreground: 48 100% 93%;
+  --card: 215 15% 12%;
+  --card-foreground: 48 100% 93%;
+  --primary: 48 100% 52%;
+  --primary-foreground: 0 0% 8%;
+  --muted: 215 10% 24%;
+  --muted-foreground: 48 55% 78%;
+  --border: 215 8% 36%;
+  --ring: 5 100% 52%;
+  --page-grad-1: rgba(255, 46, 46, 0.22);
+  --page-grad-2: rgba(255, 206, 52, 0.1);
+}
+
 * {
   box-sizing: border-box;
 }

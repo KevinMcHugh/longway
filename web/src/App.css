@@ -939,6 +939,66 @@ html[data-theme='high-contrast'] .node-selected {
   outline-color: #ffe600;
 }
 
+html[data-theme='hells-bells'] .header,
+html[data-theme='hells-bells'] .pane,
+html[data-theme='hells-bells'] .options-panel,
+html[data-theme='hells-bells'] .shop-slot,
+html[data-theme='hells-bells'] .gear-collapsible,
+html[data-theme='hells-bells'] .origin-collapsible,
+html[data-theme='hells-bells'] .origin-group {
+  border-color: #626a73;
+  background: linear-gradient(160deg, #1a2027, #11161d);
+}
+
+html[data-theme='hells-bells'] .act-label,
+html[data-theme='hells-bells'] .voltage-meter,
+html[data-theme='hells-bells'] .mobile-nav,
+html[data-theme='hells-bells'] .song-row,
+html[data-theme='hells-bells'] .shop-item,
+html[data-theme='hells-bells'] .star,
+html[data-theme='hells-bells'] .gear-tile {
+  border-color: #727a85;
+  background: #1f262f;
+  color: #ffeab0;
+}
+
+html[data-theme='hells-bells'] .eyebrow,
+html[data-theme='hells-bells'] .voltage-label {
+  color: #ffd339;
+}
+
+html[data-theme='hells-bells'] .primary {
+  background: linear-gradient(120deg, #ff3434, #ffcc30);
+  color: #0d1015;
+}
+
+html[data-theme='hells-bells'] .ghost {
+  border-color: #8a929d;
+  color: #ffeab0;
+  background: #1b222b;
+}
+
+html[data-theme='hells-bells'] .meta,
+html[data-theme='hells-bells'] .lede {
+  color: #f7d88a;
+}
+
+html[data-theme='hells-bells'] .node-challenge {
+  background: #ffcc30;
+}
+
+html[data-theme='hells-bells'] .node-shop {
+  background: #9aa3ad;
+}
+
+html[data-theme='hells-bells'] .node-boss {
+  background: #ff3434;
+}
+
+html[data-theme='hells-bells'] .node-selected {
+  outline-color: #ffd339;
+}
+
 @media (min-width: 768px) {
   .app {
     height: 100vh;

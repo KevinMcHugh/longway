@@ -23,6 +23,7 @@ const mobileModes = [
 const themeOptions = [
   { value: 'default', label: 'Default' },
   { value: 'high-contrast', label: 'High Contrast' },
+  { value: 'hells-bells', label: "Hell's Bells" },
 ]
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [

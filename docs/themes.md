@@ -6,6 +6,7 @@ The web client supports runtime theme switching.
 
 - `Default`
 - `High Contrast`
+- `Hell's Bells` (AC/DC-inspired red, black, yellow, and gunmetal palette)
 
 ## Where to change theme
 
