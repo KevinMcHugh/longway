@@ -5,7 +5,7 @@ export const guideFlows = {
     {
       id: 'concept',
       title: 'Roguelike + Rhythm',
-      body: 'This game is a roguelike strategy layer that sits alongside your existing rhythm game. Plan your route here, then perform songs there.',
+      body: 'This is a roguelike strategy layer that sits alongside your rhythm game. Your goal is to reach the end of Act 3 by successfully playing songs, and challenges get harder as you climb.',
     },
     {
       id: 'select-challenge',
