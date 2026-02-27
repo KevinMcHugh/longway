@@ -323,7 +323,7 @@ function App() {
                 className={`mobile-nav-button ${mobileMode === mode.id ? 'mobile-nav-active' : ''}`}
                 onClick={() => setMobileMode(mode.id)}
               >
-                {mode.label}
+                {mode.id === 'challenge' && selectedNode?.kind === 'shop' ? 'Shop' : mode.label}
               </button>
             ))}
           </nav>
@@ -770,15 +770,17 @@ function App() {
 
   function advanceRow() {
     const nextRow = currentRow + 1
-    if (nextRow >= current.rows.length) return
+    if (nextRow >= current.rows.length) return null
     const prevChoice = choices[ currentAct ]?.[ currentRow ] ?? selected.col
     const edges = current.rows[ currentRow ][ prevChoice ]?.edges || []
     const nextCol = edges[ 0 ] ?? 0
+    const nextNodeKind = current.rows[ nextRow ]?.[ nextCol ]?.kind ?? null
     setCurrentRow(nextRow)
     setSelected({ act: currentAct, row: nextRow, col: nextCol })
     setPhase('idle')
     setSelectedSongs([])
     setStarEntries([])
+    return nextNodeKind
   }
 
   function advanceAct() {
@@ -877,9 +879,11 @@ function App() {
         submitStars()
         break
       case 'advance':
-        advanceRow()
-        if (isMobileView) {
-          setMobileMode('map')
+        {
+          const nextNodeKind = advanceRow()
+          if (isMobileView) {
+            setMobileMode(nextNodeKind === nodeKinds.shop ? 'challenge' : 'map')
+          }
         }
         break
       case 'nextAct':
