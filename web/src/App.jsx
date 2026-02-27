@@ -396,20 +396,22 @@ function App() {
           <section className="map-preview">
             <p className="eyebrow">Selected Challenge</p>
             {selectedNode ? (
-              <div className="shop-slot">
-                <h3 className="map-selected-title">
-                  {selectedNode.kind === 'shop'
-                    ? 'Gear Shop'
-                    : selectedNode.challenge?.name ?? 'Unknown'}
-                </h3>
-                <p className="meta">
-                  {selectedNode.kind === 'shop'
-                    ? 'Restock and upgrade (coming soon).'
-                    : selectedNode.challenge?.summary}
-                </p>
-                {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
-                  <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
-                ) : null}
+              <div className="shop-slot map-preview-card">
+                <div className="map-preview-info">
+                  <h3 className="map-selected-title">
+                    {selectedNode.kind === 'shop'
+                      ? 'Gear Shop'
+                      : selectedNode.challenge?.name ?? 'Unknown'}
+                  </h3>
+                  <p className="meta map-preview-summary">
+                    {selectedNode.kind === 'shop'
+                      ? 'Restock and upgrade (coming soon).'
+                      : selectedNode.challenge?.summary}
+                  </p>
+                  {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
+                    <p className="goal map-preview-goal">Goal: avg {renderStars(selectedNode.challenge.goal)}</p>
+                  ) : null}
+                </div>
                 {mapAction ? (
                   <button
                     className="primary map-preview-action"
