@@ -265,6 +265,17 @@ button {
   border-top: 1px solid rgba(79, 109, 134, 0.45);
 }
 
+.map-selected {
+  margin-top: 0.55rem;
+  display: grid;
+  gap: 0.35rem;
+}
+
+.map-selected-title {
+  margin: 0 0 0.2rem 0;
+  font-size: 0.96rem;
+}
+
 .gear-collapsible {
   border: 1px solid #2f4d6d;
   border-radius: 0.64rem;
@@ -577,6 +588,28 @@ button {
   background: #53c7a1;
   color: #081523;
   border-color: #53c7a1;
+}
+
+.entering-view {
+  gap: 0.4rem;
+}
+
+.entering-view ul {
+  gap: 0.24rem;
+}
+
+.entering-view .song-row {
+  padding: 0.38rem 0.46rem;
+}
+
+.entering-view .stars {
+  margin-top: 0.12rem;
+  gap: 0.24rem;
+}
+
+.entering-view .star {
+  padding: 0.1rem 0.42rem;
+  font-size: 0.82rem;
 }
 
 .actions-bar {

@@ -385,6 +385,30 @@ function App() {
             }}
           />
         </section>
+        {isMobileView ? (
+          <section className="map-selected">
+            <p className="eyebrow">Selected Challenge</p>
+            {selectedNode ? (
+              <div className="shop-slot">
+                <h3 className="map-selected-title">
+                  {selectedNode.kind === 'shop'
+                    ? 'Gear Shop'
+                    : selectedNode.challenge?.name ?? 'Unknown'}
+                </h3>
+                <p className="meta">
+                  {selectedNode.kind === 'shop'
+                    ? 'Restock and upgrade (coming soon).'
+                    : selectedNode.challenge?.summary}
+                </p>
+                {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
+                  <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+                ) : null}
+              </div>
+            ) : (
+              <p className="meta">Select a node to see challenge details.</p>
+            )}
+          </section>
+        ) : null}
         <section className="gear">
           <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
             <summary className="gear-summary">
@@ -409,7 +433,7 @@ function App() {
     return (
       <>
         {selectedNode ? (
-          <div className="details">
+          <div className={`details ${phase === 'entering' ? 'entering-view' : ''}`}>
             <p className="eyebrow">Challenge Mode</p>
             <h3>
               {selectedNode.kind === 'shop'
