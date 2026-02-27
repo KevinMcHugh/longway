@@ -16,7 +16,6 @@ const minCircle = 1
 const maxCircle = 9
 const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx) => minCircle + idx)
 const mobileModes = [
-  { id: 'newGame', label: 'New Game' },
   { id: 'map', label: 'Map' },
   { id: 'challenge', label: 'Challenge' },
   { id: 'options', label: 'Options' },
@@ -321,10 +320,7 @@ function App() {
                 key={mode.id}
                 type="button"
                 className={`mobile-nav-button ${mobileMode === mode.id ? 'mobile-nav-active' : ''}`}
-                onClick={() => {
-                  if (mode.id === 'newGame') primeNewGameForm()
-                  setMobileMode(mode.id)
-                }}
+                onClick={() => setMobileMode(mode.id)}
               >
                 {mode.label}
               </button>
