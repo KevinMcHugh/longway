@@ -212,7 +212,7 @@ button {
 
 .mobile-nav {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 0.4rem;
   padding: 0.2rem;
   border: 1px solid #2a4460;
@@ -263,35 +263,6 @@ button {
   margin-top: 0.7rem;
   padding-top: 0.65rem;
   border-top: 1px solid rgba(79, 109, 134, 0.45);
-}
-
-.map-selected {
-  display: grid;
-  gap: 0.35rem;
-  min-height: 0;
-}
-
-.map-selected-collapsible {
-  border: 1px solid #2f4d6d;
-  border-radius: 0.64rem;
-  padding: 0.45rem;
-  background: rgba(10, 22, 36, 0.9);
-}
-
-.map-selected-summary {
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.map-selected-collapsible:not([open]) .collapse-icon {
-  transform: rotate(-90deg);
-}
-
-.map-selected-title {
-  margin: 0 0 0.2rem 0;
-  font-size: 0.96rem;
 }
 
 .gear-collapsible {

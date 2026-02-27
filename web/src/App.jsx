@@ -17,6 +17,7 @@ const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx)
 const mobileModes = [
   { id: 'map', label: 'Map' },
   { id: 'challenge', label: 'Challenge' },
+  { id: 'gear', label: 'Gear' },
   { id: 'options', label: 'Options' },
 ]
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
@@ -87,7 +88,6 @@ function App() {
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
   const [ mobileMode, setMobileMode ] = useState('map')
-  const [ mapDetailsOpen, setMapDetailsOpen ] = useState(false)
   const [ gearOpen, setGearOpen ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth >= mobileBreakpoint : true,
   )
@@ -257,6 +257,22 @@ function App() {
                 {renderChallengePane()}
               </aside>
             ) : null}
+            {mobileMode === 'gear' ? (
+              <div className="pane right mobile-pane">
+                <div className="details">
+                  <p className="eyebrow">Gear Mode</p>
+                  <h3>Current Loadout</h3>
+                  <ul className="gear-grid">
+                    {gearSlots.map((slot) => (
+                      <li key={slot} className="gear-tile">
+                        <div className="gear-slot">{slot}</div>
+                        <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            ) : null}
             {mobileMode === 'options' ? (
               <div className="pane right mobile-pane">
                 <div className="details">
@@ -284,17 +300,6 @@ function App() {
                     <button className="ghost" type="button" onClick={() => setMobileMode('map')}>
                       Return to map
                     </button>
-                  </div>
-                  <div className="gear">
-                    <p className="eyebrow">Current Setup</p>
-                    <ul className="gear-grid">
-                      {gearSlots.map((slot) => (
-                        <li key={slot} className="gear-tile">
-                          <div className="gear-slot">{slot}</div>
-                          <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
-                        </li>
-                      ))}
-                    </ul>
                   </div>
                   <div className="shop-slot">
                     <p className="meta">Instrument: {instrument}</p>
@@ -381,55 +386,24 @@ function App() {
             }}
           />
         </section>
-        {isMobileView ? (
-          <section className="map-selected">
-            <details
-              className="map-selected-collapsible"
-              open={mapDetailsOpen}
-              onToggle={(e) => setMapDetailsOpen(e.currentTarget.open)}
-            >
-              <summary className="map-selected-summary">
-                <span className="eyebrow">Selected Challenge</span>
+        {!isMobileView ? (
+          <section className="gear">
+            <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
+              <summary className="gear-summary">
+                <span className="eyebrow">Gear</span>
                 <span className="collapse-icon" aria-hidden="true">▾</span>
               </summary>
-              {selectedNode ? (
-                <div className="shop-slot">
-                  <h3 className="map-selected-title">
-                    {selectedNode.kind === 'shop'
-                      ? 'Gear Shop'
-                      : selectedNode.challenge?.name ?? 'Unknown'}
-                  </h3>
-                  <p className="meta">
-                    {selectedNode.kind === 'shop'
-                      ? 'Restock and upgrade (coming soon).'
-                      : selectedNode.challenge?.summary}
-                  </p>
-                  {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
-                    <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
-                  ) : null}
-                </div>
-              ) : (
-                <p className="meta">Select a node to see challenge details.</p>
-              )}
+              <ul className="gear-grid">
+                {gearSlots.map((slot) => (
+                  <li key={slot} className="gear-tile">
+                    <div className="gear-slot">{slot}</div>
+                    <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
+                  </li>
+                ))}
+              </ul>
             </details>
           </section>
         ) : null}
-        <section className="gear">
-          <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
-            <summary className="gear-summary">
-              <span className="eyebrow">Gear</span>
-              <span className="collapse-icon" aria-hidden="true">▾</span>
-            </summary>
-            <ul className="gear-grid">
-              {gearSlots.map((slot) => (
-                <li key={slot} className="gear-tile">
-                  <div className="gear-slot">{slot}</div>
-                  <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
-                </li>
-              ))}
-            </ul>
-          </details>
-        </section>
       </>
     )
   }
