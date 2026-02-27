@@ -26,3 +26,4 @@ If you are developing a production application, we recommend using TypeScript wi
 - shadcn-compatible components live in `src/components/ui`.
 - Start Storybook with `npm run storybook`.
 - Run visual snapshot tests with `npm run test:visual` (or create baselines with `npm run test:visual:update`).
+- Runtime theme switching (Default / High Contrast) is available in mobile `Options` mode and desktop/tablet header `Options`.

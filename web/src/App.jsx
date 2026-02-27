@@ -20,6 +20,10 @@ const mobileModes = [
   { id: 'gear', label: 'Gear' },
   { id: 'options', label: 'Options' },
 ]
+const themeOptions = [
+  { value: 'default', label: 'Default' },
+  { value: 'high-contrast', label: 'High Contrast' },
+]
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [
   { value: 'band', label: 'Band' },
@@ -78,12 +82,14 @@ function App() {
   const [ results, setResults ] = useState(() => restoreResults(savedState?.results))
   const [ gear, setGear ] = useState(savedState?.gear ?? defaultGear())
   const [ voltage, setVoltage ] = useState(savedState?.voltage ?? startingVoltage)
+  const [ theme, setTheme ] = useState(savedState?.theme ?? 'default')
   const hydrated = useRef(false)
   const prevAct = useRef(currentAct)
   const [ loadedFromStorage ] = useState(Boolean(savedState))
   const [ lastSaved, setLastSaved ] = useState(savedState?.lastSaved ?? null)
   const [ gameOver, setGameOver ] = useState(false)
   const [ newGameOpen, setNewGameOpen ] = useState(false)
+  const [ optionsOpen, setOptionsOpen ] = useState(false)
   const [ isMobileView, setIsMobileView ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
@@ -112,12 +118,18 @@ function App() {
   useEffect(() => {
     if (isMobileView) {
       setNewGameOpen(false)
+      setOptionsOpen(false)
     }
   }, [ isMobileView ])
 
   useEffect(() => {
     setGearOpen(!isMobileView)
   }, [ isMobileView ])
+
+  useEffect(() => {
+    if (typeof document === 'undefined') return
+    document.documentElement.dataset.theme = theme
+  }, [ theme ])
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -155,6 +167,7 @@ function App() {
       shopOffers,
       voltage,
       selectedOrigins,
+      theme,
     })
     setLastSaved(now)
   }, [
@@ -174,6 +187,7 @@ function App() {
     shopOffers,
     voltage,
     selectedOrigins,
+    theme,
   ])
 
   const current = acts[ currentAct ]
@@ -237,10 +251,38 @@ function App() {
               <button className="ghost" type="button" onClick={() => openNewGame(true)}>
                 New game
               </button>
+              <button className="ghost" type="button" onClick={() => setOptionsOpen((prev) => !prev)}>
+                Options
+              </button>
             </div>
           ) : null}
         </div>
       </header>
+      {!isMobileView && optionsOpen ? (
+        <section className="pane options-panel">
+          <div className="details">
+            <p className="eyebrow">Options</p>
+            <h3>Display</h3>
+            <div className="form-row">
+              <label className="select-label">
+                Theme
+                <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                  {themeOptions.map((opt) => (
+                    <option key={opt.value} value={opt.value}>
+                      {opt.label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
+            <div className="dialog-actions">
+              <button className="ghost" type="button" onClick={() => setOptionsOpen(false)}>
+                Close
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
 
       {isMobileView ? (
         <div className="mobile-shell">
@@ -291,6 +333,18 @@ function App() {
                       Autosave: {loadedFromStorage ? 'resumed' : 'new run'}
                       {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
                     </p>
+                  </div>
+                  <div className="form-row">
+                    <label className="select-label">
+                      Theme
+                      <select value={theme} onChange={(e) => setTheme(e.target.value)}>
+                        {themeOptions.map((opt) => (
+                          <option key={opt.value} value={opt.value}>
+                            {opt.label}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
                   </div>
                   <div className="dialog-actions">
                     <button

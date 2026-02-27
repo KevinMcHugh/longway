@@ -14,6 +14,23 @@
   --border: 212 32% 24%;
   --ring: 18 100% 56%;
   --radius: 0.75rem;
+  --page-grad-1: rgba(255, 120, 56, 0.18);
+  --page-grad-2: rgba(45, 212, 191, 0.14);
+}
+
+:root[data-theme='high-contrast'] {
+  --background: 220 20% 5%;
+  --foreground: 0 0% 100%;
+  --card: 220 20% 8%;
+  --card-foreground: 0 0% 100%;
+  --primary: 55 100% 50%;
+  --primary-foreground: 0 0% 0%;
+  --muted: 220 18% 16%;
+  --muted-foreground: 0 0% 90%;
+  --border: 0 0% 80%;
+  --ring: 55 100% 50%;
+  --page-grad-1: rgba(255, 255, 255, 0.06);
+  --page-grad-2: rgba(255, 255, 255, 0.04);
 }
 
 * {
@@ -32,8 +49,8 @@ body {
   font-family: 'Space Grotesk', 'Avenir Next', 'Segoe UI', sans-serif;
   color: hsl(var(--foreground));
   background:
-    radial-gradient(1100px 700px at 85% -10%, rgba(255, 120, 56, 0.18), transparent 60%),
-    radial-gradient(850px 550px at -15% 105%, rgba(45, 212, 191, 0.14), transparent 55%),
+    radial-gradient(1100px 700px at 85% -10%, var(--page-grad-1), transparent 60%),
+    radial-gradient(850px 550px at -15% 105%, var(--page-grad-2), transparent 55%),
     hsl(var(--background));
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

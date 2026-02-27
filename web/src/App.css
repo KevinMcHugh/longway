@@ -132,6 +132,7 @@ h1 {
 .options {
   display: flex;
   align-items: stretch;
+  gap: 0.5rem;
 }
 
 button {
@@ -167,6 +168,11 @@ button {
   grid-template-columns: 1fr;
   gap: 0.85rem;
   min-height: 0;
+}
+
+.options-panel {
+  margin-top: 0.45rem;
+  padding: 0.65rem;
 }
 
 .app-mobile {
@@ -835,6 +841,11 @@ button {
     grid-template-columns: 1.05fr 0.95fr;
   }
 
+  .options-panel {
+    width: min(420px, 100%);
+    margin-top: 0.4rem;
+  }
+
   .acts {
     min-height: 360px;
   }
@@ -872,6 +883,60 @@ button {
   .origin-list {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+}
+
+html[data-theme='high-contrast'] .header,
+html[data-theme='high-contrast'] .pane,
+html[data-theme='high-contrast'] .options-panel,
+html[data-theme='high-contrast'] .shop-slot,
+html[data-theme='high-contrast'] .gear-collapsible,
+html[data-theme='high-contrast'] .origin-collapsible,
+html[data-theme='high-contrast'] .origin-group {
+  border-color: #f2f2f2;
+  background: #0d0d0d;
+}
+
+html[data-theme='high-contrast'] .act-label,
+html[data-theme='high-contrast'] .voltage-meter,
+html[data-theme='high-contrast'] .mobile-nav,
+html[data-theme='high-contrast'] .song-row,
+html[data-theme='high-contrast'] .shop-item,
+html[data-theme='high-contrast'] .star {
+  border-color: #ffffff;
+  background: #0f0f0f;
+  color: #ffffff;
+}
+
+html[data-theme='high-contrast'] .primary {
+  background: #ffe600;
+  color: #000000;
+}
+
+html[data-theme='high-contrast'] .ghost {
+  border-color: #f2f2f2;
+  color: #ffffff;
+  background: #141414;
+}
+
+html[data-theme='high-contrast'] .meta,
+html[data-theme='high-contrast'] .lede {
+  color: #f2f2f2;
+}
+
+html[data-theme='high-contrast'] .node-challenge {
+  background: #00d4ff;
+}
+
+html[data-theme='high-contrast'] .node-shop {
+  background: #3df39b;
+}
+
+html[data-theme='high-contrast'] .node-boss {
+  background: #ff5c5c;
+}
+
+html[data-theme='high-contrast'] .node-selected {
+  outline-color: #ffe600;
 }
 
 @media (min-width: 768px) {

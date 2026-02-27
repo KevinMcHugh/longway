@@ -17,6 +17,7 @@ Long Way To The Top is a terminal-first roguelike that swaps combat for rhythm. 
 - Run the client with `npm run dev`.
 - For Codex/frontend inspection, run `npm run dev:inspect` to bind to a fixed endpoint: <http://127.0.0.1:4173>.
 - Capture a screenshot with `npm run screenshot -- --url http://127.0.0.1:4173 --out ../tmp/frontend.png`.
+- Theme selection is available in `Options` (mobile) and via the header `Options` menu (tablet/desktop), including a high-contrast mode.
 - Run Storybook with `npm run storybook`.
 - Update visual baselines: `npm run test:visual:update`.
 - Validate visual snapshots: `npm run test:visual`.
