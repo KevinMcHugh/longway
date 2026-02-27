@@ -170,6 +170,74 @@ button {
   min-height: 0;
 }
 
+.app-mobile {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+
+.mobile-shell {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  position: relative;
+}
+
+.mobile-mode-view {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.mobile-pane {
+  height: 100%;
+}
+
+.mobile-pane.left {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr) auto;
+}
+
+.mobile-pane .acts {
+  min-height: 0;
+}
+
+.mobile-pane .act-map {
+  height: 100%;
+}
+
+.mobile-pane .details {
+  min-height: 0;
+}
+
+.mobile-nav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.4rem;
+  padding: 0.2rem;
+  border: 1px solid #2a4460;
+  border-radius: 0.8rem;
+  background: rgba(8, 18, 31, 0.9);
+}
+
+.mobile-nav-button {
+  border: 1px solid #2f4f6e;
+  background: rgba(14, 30, 49, 0.82);
+  color: #d8e8f6;
+  border-radius: 0.6rem;
+  padding: 0.5rem 0.3rem;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.mobile-nav-active {
+  border-color: #7de9c6;
+  background: rgba(26, 55, 82, 0.95);
+  color: #ebfffa;
+}
+
 .pane {
   border: 1px solid #20364f;
   border-radius: 1rem;

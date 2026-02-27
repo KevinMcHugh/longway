@@ -10,9 +10,16 @@ const startingVoltage = 10000
 const voltagePenaltyPerMissingStar = 1000
 const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
+const mobileBreakpoint = 900
 const minCircle = 1
 const maxCircle = 9
 const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx) => minCircle + idx)
+const mobileModes = [
+  { id: 'newGame', label: 'New Game' },
+  { id: 'map', label: 'Map' },
+  { id: 'challenge', label: 'Challenge' },
+  { id: 'options', label: 'Options' },
+]
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [
   { value: 'band', label: 'Band' },
@@ -77,6 +84,10 @@ function App() {
   const [ lastSaved, setLastSaved ] = useState(savedState?.lastSaved ?? null)
   const [ gameOver, setGameOver ] = useState(false)
   const [ newGameOpen, setNewGameOpen ] = useState(false)
+  const [ isMobileView, setIsMobileView ] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
+  )
+  const [ mobileMode, setMobileMode ] = useState('map')
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
   const [ pendingCircle, setPendingCircle ] = useState(circle)
   const [ pendingSeed, setPendingSeed ] = useState('')
@@ -84,6 +95,22 @@ function App() {
   const [ shopOffers, setShopOffers ] = useState(
     savedState?.shopOffers ?? generateShopOffers(acts, seed),
   )
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined
+    function onResize() {
+      setIsMobileView(window.innerWidth < mobileBreakpoint)
+    }
+    onResize()
+    window.addEventListener('resize', onResize)
+    return () => window.removeEventListener('resize', onResize)
+  }, [])
+
+  useEffect(() => {
+    if (isMobileView) {
+      setNewGameOpen(false)
+    }
+  }, [ isMobileView ])
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -169,8 +196,10 @@ function App() {
           startEnabled,
         })
 
+  const mobileModeLabel = mobileModes.find((m) => m.id === mobileMode)?.label ?? 'Map'
+
   return (
-    <main className="app">
+    <main className={`app ${isMobileView ? 'app-mobile' : ''}`}>
       <header className="header">
         <div className="title-block">
           <p className="eyebrow">Roguelike Rhythm Climb</p>
@@ -183,6 +212,7 @@ function App() {
           <div className="run-badges">
             <div className="act-label">Act {current?.index ?? 1}</div>
             <div className="act-label">Circle {circle}</div>
+            {isMobileView ? <div className="act-label">Mode: {mobileModeLabel}</div> : null}
           </div>
           <div className="voltage-meter">
             <p className="eyebrow">Voltage</p>
@@ -203,323 +233,448 @@ function App() {
               {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
             </div>
           </div>
-          <div className="options">
-            <button className="ghost" type="button" onClick={() => openNewGame()}>
-              New game
-            </button>
-          </div>
+          {!isMobileView ? (
+            <div className="options">
+              <button className="ghost" type="button" onClick={() => openNewGame(true)}>
+                New game
+              </button>
+            </div>
+          ) : null}
         </div>
       </header>
 
-      <div className="layout">
-        <div className="pane left">
-          <section className="acts">
-            <ActView
-              act={current}
-              onSelect={(row, col) => handleSelectNode(row, col)}
-              selected={selected}
-              reachable={{
-                row: currentRow,
-                cols: reachableCols(current, currentRow, choices, currentAct),
-              }}
-            />
-          </section>
-          <section className="gear">
-            <p className="eyebrow">Gear</p>
-            <ul className="gear-grid">
-              {gearSlots.map((slot) => (
-                <li key={slot} className="gear-tile">
-                  <div className="gear-slot">{slot}</div>
-                  <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
-                </li>
-              ))}
-            </ul>
-          </section>
-        </div>
-        <aside className="pane right">
-          {selectedNode ? (
-            <div className="details">
-              <p className="eyebrow">Challenge</p>
-              <h3>
-                {selectedNode.kind === 'shop'
-                  ? 'Gear Shop'
-                  : selectedNode.challenge?.name ?? 'Unknown'}
-              </h3>
-              <p className="lede">
-                {selectedNode.kind === 'shop'
-                  ? 'Restock and upgrade (coming soon).'
-                  : selectedNode.challenge?.summary}
-              </p>
-              {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
-                <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
-              ) : null}
-
-              {selectedNode.kind === 'shop' ? (
-                <>
-                  <p className="eyebrow">Loadout</p>
-                  {shopInventory ? (
-                    <div className="shop-grid">
-                      {shopInventory.map((item) => {
-                        const equipped = gear[ item.slot ]?.id === item.id
-                        return (
-                          <div key={item.id} className="shop-slot">
-                            <p className="meta">
-                              {item.slot} • {item.rarity}
-                            </p>
-                            <button
-                              className={`shop-item ${equipped ? 'shop-item-active' : ''}`}
-                              onClick={() => equipGear(item.slot, item)}
-                              type="button"
-                            >
-                              {item.name}
-                            </button>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  ) : (
-                    <p className="meta">No shop inventory.</p>
-                  )}
-                </>
-              ) : null}
-
-              {selectedNode.kind !== 'shop' && phase !== 'idle' && selectedNode.challenge?.songs && (
-                <>
-                  <p className="eyebrow">Songs</p>
-                  <ul>
-                    {(phase === 'selecting' ? selectedNode.challenge.songs : selectedSongs).map((s) => {
-                      const selectedIdx = selectedSongs.findIndex((sel) => sel.id === s.id)
-                      const isSelected = selectedIdx !== -1
-                      const toggleAllowed =
-                        phase === 'selecting' &&
-                        isSongToggleAllowed({
-                          phase,
-                          isSelected,
-                          selectedCount: selectedSongs.length,
-                          minSelectable: selectTarget,
-                          maxSelectable: selectTarget,
-                        })
-                      return (
-                        <li key={`${s.id}-${s.title}`}>
-                          <button
-                            type="button"
-                            className={`song-row ${phase === 'selecting' && isSelected ? 'song-row-selected' : ''
-                              }`}
-                            onClick={toggleAllowed ? () => toggleSongSelection(s) : undefined}
-                            disabled={!toggleAllowed}
-                          >
-                            {phase === 'selecting' && (
-                              <span className="checkbox">{isSelected ? '✓' : ''}</span>
-                            )}
-                            <div className="song-info">
-                              <div className="song-main">
-                                <span>
-                                  <strong>{s.title}</strong> — {s.artist}{' '}
-                                  {s.year ? <span className="meta">({s.year})</span> : null}
-                                </span>
-                                <span className="song-meta">
-                                  {s.origin ? <span className="meta">{s.origin}</span> : null}
-                                  {s.genre ? <span className="meta"> • {s.genre}</span> : null}
-                                  {s.length ? <span className="meta"> • {s.length}</span> : null}
-                                  {s.difficulty ? (
-                                    <span className="meta"> • {renderDifficulty(s.difficulty)}</span>
-                                  ) : null}
-                                </span>
-                              </div>
-                            </div>
-                          </button>
-                          {phase === 'entering' && isSelected ? (
-                            <StarPicker
-                              value={starEntries[ selectedIdx ]}
-                              onChange={(val) => updateStarEntry(selectedIdx, val)}
-                              max={maxStars}
-                            />
-                          ) : null}
-                          {phase === 'done' &&
-                            resultsKey(selected.act, selected.row) in results &&
-                            isSelected ? (
-                            <span className="meta">
-                              {renderStars(
-                                results[ resultsKey(selected.act, selected.row) ].stars[ selectedIdx ],
-                              )}
-                            </span>
-                          ) : null}
-                        </li>
-                      )
-                    })}
-                  </ul>
-                </>
-              )}
-            </div>
-          ) : (
-            <p className="lede">Select a node to see details.</p>
-          )}
-          <div className="actions-bar">
-            {action ? (
-              <button
-                className="primary"
-                onClick={() => {
-                  switch (action.kind) {
-                    case 'start':
-                      startChallenge()
-                      break
-                    case 'enter':
-                      setPhase('entering')
-                      break
-                    case 'submit':
-                      submitStars()
-                      break
-                    case 'advance':
-                      advanceRow()
-                      break
-                    case 'nextAct':
-                      advanceAct()
-                      break
-                    default:
-                      break
-                  }
-                }}
-                disabled={action.disabled}
-              >
-                {action.label}
-              </button>
+      {isMobileView ? (
+        <div className="mobile-shell">
+          <section className="mobile-mode-view">
+            {mobileMode === 'newGame' ? (
+              <div className="pane right mobile-pane">
+                <div className="details">
+                  <p className="eyebrow">New Game Mode</p>
+                  {renderNewGameForm(false)}
+                </div>
+              </div>
             ) : null}
-          </div>
+            {mobileMode === 'map' ? (
+              <div className="pane left mobile-pane">
+                {renderMapPane()}
+              </div>
+            ) : null}
+            {mobileMode === 'challenge' ? (
+              <aside className="pane right mobile-pane">
+                {renderChallengePane()}
+              </aside>
+            ) : null}
+            {mobileMode === 'options' ? (
+              <div className="pane right mobile-pane">
+                <div className="details">
+                  <p className="eyebrow">Options Mode</p>
+                  <h3>Run Controls</h3>
+                  <p className="lede">Switch modes below and configure your next run.</p>
+                  <div className="dialog-actions">
+                    <button
+                      className="ghost"
+                      type="button"
+                      onClick={() => {
+                        primeNewGameForm()
+                        setMobileMode('newGame')
+                      }}
+                    >
+                      Configure new run
+                    </button>
+                    <button className="ghost" type="button" onClick={() => setMobileMode('map')}>
+                      Return to map
+                    </button>
+                  </div>
+                  <div className="gear">
+                    <p className="eyebrow">Current Setup</p>
+                    <ul className="gear-grid">
+                      {gearSlots.map((slot) => (
+                        <li key={slot} className="gear-tile">
+                          <div className="gear-slot">{slot}</div>
+                          <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                  <div className="shop-slot">
+                    <p className="meta">Instrument: {instrument}</p>
+                    <p className="meta">Selected origins: {selectedOrigins.length}</p>
+                  </div>
+                </div>
+              </div>
+            ) : null}
+          </section>
+          <nav className="mobile-nav" aria-label="Mobile mode navigation">
+            {mobileModes.map((mode) => (
+              <button
+                key={mode.id}
+                type="button"
+                className={`mobile-nav-button ${mobileMode === mode.id ? 'mobile-nav-active' : ''}`}
+                onClick={() => {
+                  if (mode.id === 'newGame') primeNewGameForm()
+                  setMobileMode(mode.id)
+                }}
+              >
+                {mode.label}
+              </button>
+            ))}
+          </nav>
           {gameOver ? (
             <div className="gameover">
               <div className="gameover-card">
                 <h4>Game Over</h4>
                 <p>You missed the goal. Start a new run to try again.</p>
-                <button className="primary" type="button" onClick={openNewGame}>
+                <button
+                  className="primary"
+                  type="button"
+                  onClick={() => {
+                    primeNewGameForm()
+                    setMobileMode('newGame')
+                  }}
+                >
                   New game
                 </button>
               </div>
             </div>
           ) : null}
-          {newGameOpen ? (
-            <div className="gameover">
-              <div className="gameover-card">
-                <h4>New Game</h4>
-                <div className="form-row">
-                  <label className="select-label">
-                    Instrument
-                    <select
-                      value={pendingInstrument}
-                      onChange={(e) => setPendingInstrument(e.target.value)}
-                    >
-                      {instruments.map((opt) => (
-                        <option key={opt.value} value={opt.value}>
-                          {opt.label}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                <div className="form-row">
-                  <label className="select-label">
-                    Circle of Hell
-                    <select
-                      value={pendingCircle}
-                      onChange={(e) => setPendingCircle(clampCircle(Number(e.target.value)))}
-                    >
-                      {circleOptions.map((value) => (
-                        <option key={value} value={value}>
-                          Circle {value}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                </div>
-                <div className="form-row">
-                  <label className="select-label">
-                    Seed (optional)
-                    <input
-                      type="text"
-                      value={pendingSeed}
-                      onChange={(e) => setPendingSeed(e.target.value)}
-                    />
-                  </label>
-                </div>
-                <div className="dialog-actions">
-                  <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
-                    Cancel
-                  </button>
-                  <button className="primary" type="button" onClick={confirmNewGame}>
-                    Start
+        </div>
+      ) : (
+        <div className="layout">
+          <div className="pane left">
+            {renderMapPane()}
+          </div>
+          <aside className="pane right">
+            {renderChallengePane()}
+            {gameOver ? (
+              <div className="gameover">
+                <div className="gameover-card">
+                  <h4>Game Over</h4>
+                  <p>You missed the goal. Start a new run to try again.</p>
+                  <button className="primary" type="button" onClick={() => openNewGame(true)}>
+                    New game
                   </button>
                 </div>
-                <div className="form-row">
-                  <p className="select-label">Song origins</p>
-                  <div className="origin-controls">
-                    <button
-                      type="button"
-                      className="ghost"
-                      onClick={() => setPendingOrigins(songOrigins)}
-                    >
-                      Select all
-                    </button>
-                    <button
-                      type="button"
-                      className="ghost"
-                      onClick={() => {
-                        if (pendingOrigins.length === 1) return
-                        setPendingOrigins((prev) => (prev.length ? [] : [ ...songOrigins ]))
-                      }}
-                    >
-                      Clear
-                    </button>
+              </div>
+            ) : null}
+            {newGameOpen ? (
+              <div className="gameover">
+                <div className="gameover-card">
+                  <p className="eyebrow">New Game</p>
+                  {renderNewGameForm(true)}
+                </div>
+              </div>
+            ) : null}
+          </aside>
+        </div>
+      )}
+    </main>
+  )
+
+  function renderMapPane() {
+    return (
+      <>
+        <section className="acts">
+          <ActView
+            act={current}
+            onSelect={(row, col) => handleSelectNode(row, col)}
+            selected={selected}
+            reachable={{
+              row: currentRow,
+              cols: reachableCols(current, currentRow, choices, currentAct),
+            }}
+          />
+        </section>
+        <section className="gear">
+          <p className="eyebrow">Gear</p>
+          <ul className="gear-grid">
+            {gearSlots.map((slot) => (
+              <li key={slot} className="gear-tile">
+                <div className="gear-slot">{slot}</div>
+                <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </>
+    )
+  }
+
+  function renderChallengePane() {
+    return (
+      <>
+        {selectedNode ? (
+          <div className="details">
+            <p className="eyebrow">Challenge Mode</p>
+            <h3>
+              {selectedNode.kind === 'shop'
+                ? 'Gear Shop'
+                : selectedNode.challenge?.name ?? 'Unknown'}
+            </h3>
+            <p className="lede">
+              {selectedNode.kind === 'shop'
+                ? 'Restock and upgrade (coming soon).'
+                : selectedNode.challenge?.summary}
+            </p>
+            {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
+              <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+            ) : null}
+
+            {selectedNode.kind === 'shop' ? (
+              <>
+                <p className="eyebrow">Loadout</p>
+                {shopInventory ? (
+                  <div className="shop-grid">
+                    {shopInventory.map((item) => {
+                      const equipped = gear[ item.slot ]?.id === item.id
+                      return (
+                        <div key={item.id} className="shop-slot">
+                          <p className="meta">
+                            {item.slot} • {item.rarity}
+                          </p>
+                          <button
+                            className={`shop-item ${equipped ? 'shop-item-active' : ''}`}
+                            onClick={() => equipGear(item.slot, item)}
+                            type="button"
+                          >
+                            {item.name}
+                          </button>
+                        </div>
+                      )
+                    })}
                   </div>
-                  <details className="origin-collapsible" open>
-                    <summary className="origin-summary">Origins ({pendingOrigins.length})</summary>
-                    <div className="origin-groups">
-                      {originGroups.map((group) => {
-                        const allSelected = group.origins.every((o) => pendingOrigins.includes(o))
-                        const someSelected =
-                          !allSelected && group.origins.some((o) => pendingOrigins.includes(o))
-                        return (
-                          <details key={group.series} className="origin-group" open>
-                            <summary className="origin-series">
-                              <span className="collapse-icon" aria-hidden="true">▾</span>
-                              <label className="checkbox-row origin-series-row">
-                                <input
-                                  type="checkbox"
-                                  checked={allSelected}
-                                  ref={(el) => {
-                                    if (el) el.indeterminate = someSelected
-                                  }}
-                                  onChange={() => toggleSeries(group.origins, allSelected)}
-                                />
-                                <span>{group.series}</span>
-                              </label>
-                            </summary>
-                            <div className="origin-list">
-                              {group.origins.map((origin) => {
-                                const checked = pendingOrigins.includes(origin)
-                                return (
-                                  <label key={origin} className="checkbox-row">
-                                    <input
-                                      type="checkbox"
-                                      checked={checked}
-                                      onChange={() => togglePendingOrigin(origin)}
-                                    />
-                                    <span>{origin}</span>
-                                  </label>
-                                )
-                              })}
+                ) : (
+                  <p className="meta">No shop inventory.</p>
+                )}
+              </>
+            ) : null}
+
+            {selectedNode.kind !== 'shop' && phase !== 'idle' && selectedNode.challenge?.songs && (
+              <>
+                <p className="eyebrow">Songs</p>
+                <ul>
+                  {(phase === 'selecting' ? selectedNode.challenge.songs : selectedSongs).map((s) => {
+                    const selectedIdx = selectedSongs.findIndex((sel) => sel.id === s.id)
+                    const isSelected = selectedIdx !== -1
+                    const toggleAllowed =
+                      phase === 'selecting' &&
+                      isSongToggleAllowed({
+                        phase,
+                        isSelected,
+                        selectedCount: selectedSongs.length,
+                        minSelectable: selectTarget,
+                        maxSelectable: selectTarget,
+                      })
+                    return (
+                      <li key={`${s.id}-${s.title}`}>
+                        <button
+                          type="button"
+                          className={`song-row ${phase === 'selecting' && isSelected ? 'song-row-selected' : ''}`}
+                          onClick={toggleAllowed ? () => toggleSongSelection(s) : undefined}
+                          disabled={!toggleAllowed}
+                        >
+                          {phase === 'selecting' && (
+                            <span className="checkbox">{isSelected ? '✓' : ''}</span>
+                          )}
+                          <div className="song-info">
+                            <div className="song-main">
+                              <span>
+                                <strong>{s.title}</strong> — {s.artist}{' '}
+                                {s.year ? <span className="meta">({s.year})</span> : null}
+                              </span>
+                              <span className="song-meta">
+                                {s.origin ? <span className="meta">{s.origin}</span> : null}
+                                {s.genre ? <span className="meta"> • {s.genre}</span> : null}
+                                {s.length ? <span className="meta"> • {s.length}</span> : null}
+                                {s.difficulty ? (
+                                  <span className="meta"> • {renderDifficulty(s.difficulty)}</span>
+                                ) : null}
+                              </span>
                             </div>
-                          </details>
+                          </div>
+                        </button>
+                        {phase === 'entering' && isSelected ? (
+                          <StarPicker
+                            value={starEntries[ selectedIdx ]}
+                            onChange={(val) => updateStarEntry(selectedIdx, val)}
+                            max={maxStars}
+                          />
+                        ) : null}
+                        {phase === 'done' &&
+                          resultsKey(selected.act, selected.row) in results &&
+                          isSelected ? (
+                          <span className="meta">
+                            {renderStars(
+                              results[ resultsKey(selected.act, selected.row) ].stars[ selectedIdx ],
+                            )}
+                          </span>
+                        ) : null}
+                      </li>
+                    )
+                  })}
+                </ul>
+              </>
+            )}
+          </div>
+        ) : (
+          <p className="lede">Select a node to see details.</p>
+        )}
+        <div className="actions-bar">
+          {action ? (
+            <button
+              className="primary"
+              onClick={() => {
+                switch (action.kind) {
+                  case 'start':
+                    startChallenge()
+                    break
+                  case 'enter':
+                    setPhase('entering')
+                    break
+                  case 'submit':
+                    submitStars()
+                    break
+                  case 'advance':
+                    advanceRow()
+                    break
+                  case 'nextAct':
+                    advanceAct()
+                    break
+                  default:
+                    break
+                }
+              }}
+              disabled={action.disabled}
+            >
+              {action.label}
+            </button>
+          ) : null}
+        </div>
+      </>
+    )
+  }
+
+  function renderNewGameForm(showCancel) {
+    return (
+      <>
+        <h3>New Game Mode</h3>
+        <div className="form-row">
+          <label className="select-label">
+            Instrument
+            <select
+              value={pendingInstrument}
+              onChange={(e) => setPendingInstrument(e.target.value)}
+            >
+              {instruments.map((opt) => (
+                <option key={opt.value} value={opt.value}>
+                  {opt.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="form-row">
+          <label className="select-label">
+            Circle of Hell
+            <select
+              value={pendingCircle}
+              onChange={(e) => setPendingCircle(clampCircle(Number(e.target.value)))}
+            >
+              {circleOptions.map((value) => (
+                <option key={value} value={value}>
+                  Circle {value}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+        <div className="form-row">
+          <label className="select-label">
+            Seed (optional)
+            <input
+              type="text"
+              value={pendingSeed}
+              onChange={(e) => setPendingSeed(e.target.value)}
+            />
+          </label>
+        </div>
+        <div className="dialog-actions">
+          {showCancel ? (
+            <button className="ghost" type="button" onClick={() => setNewGameOpen(false)}>
+              Cancel
+            </button>
+          ) : null}
+          <button className="primary" type="button" onClick={confirmNewGame}>
+            Start
+          </button>
+        </div>
+        <div className="form-row">
+          <p className="select-label">Song origins</p>
+          <div className="origin-controls">
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => setPendingOrigins(songOrigins)}
+            >
+              Select all
+            </button>
+            <button
+              type="button"
+              className="ghost"
+              onClick={() => {
+                if (pendingOrigins.length === 1) return
+                setPendingOrigins((prev) => (prev.length ? [] : [ ...songOrigins ]))
+              }}
+            >
+              Clear
+            </button>
+          </div>
+          <details className="origin-collapsible" open>
+            <summary className="origin-summary">Origins ({pendingOrigins.length})</summary>
+            <div className="origin-groups">
+              {originGroups.map((group) => {
+                const allSelected = group.origins.every((o) => pendingOrigins.includes(o))
+                const someSelected =
+                  !allSelected && group.origins.some((o) => pendingOrigins.includes(o))
+                return (
+                  <details key={group.series} className="origin-group" open>
+                    <summary className="origin-series">
+                      <span className="collapse-icon" aria-hidden="true">▾</span>
+                      <label className="checkbox-row origin-series-row">
+                        <input
+                          type="checkbox"
+                          checked={allSelected}
+                          ref={(el) => {
+                            if (el) el.indeterminate = someSelected
+                          }}
+                          onChange={() => toggleSeries(group.origins, allSelected)}
+                        />
+                        <span>{group.series}</span>
+                      </label>
+                    </summary>
+                    <div className="origin-list">
+                      {group.origins.map((origin) => {
+                        const checked = pendingOrigins.includes(origin)
+                        return (
+                          <label key={origin} className="checkbox-row">
+                            <input
+                              type="checkbox"
+                              checked={checked}
+                              onChange={() => togglePendingOrigin(origin)}
+                            />
+                            <span>{origin}</span>
+                          </label>
                         )
                       })}
                     </div>
                   </details>
-                </div>
-              </div>
+                )
+              })}
             </div>
-          ) : null}
-        </aside>
-      </div>
-    </main>
-  )
+          </details>
+        </div>
+      </>
+    )
+  }
   function isReachable(sel, choiceMap, actData, row, actIndex) {
     if (sel.row !== row) return false
     const cols = reachableCols(actData, row, choiceMap, actIndex)
@@ -646,17 +801,27 @@ function App() {
     setVoltage(startingVoltage)
   }
 
-  function openNewGame() {
+  function primeNewGameForm() {
     setPendingInstrument(instrument)
     setPendingCircle(circle)
     setPendingSeed('')
     setPendingOrigins(selectedOrigins)
-    setNewGameOpen(true)
+  }
+
+  function openNewGame(showDialog = true) {
+    primeNewGameForm()
+    setNewGameOpen(showDialog)
+    if (!showDialog) {
+      setMobileMode('newGame')
+    }
   }
 
   function confirmNewGame() {
     setNewGameOpen(false)
     startNewRun()
+    if (isMobileView) {
+      setMobileMode('map')
+    }
   }
 
   function equipGear(slot, item) {
