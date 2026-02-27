@@ -259,6 +259,13 @@ button {
   min-height: 270px;
 }
 
+.map-row {
+  min-height: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.55rem;
+}
+
 .gear {
   margin-top: 0.7rem;
   padding-top: 0.65rem;
@@ -266,9 +273,9 @@ button {
 }
 
 .map-selected {
-  margin-top: 0.55rem;
   display: grid;
   gap: 0.35rem;
+  min-height: 0;
 }
 
 .map-selected-title {
@@ -801,6 +808,16 @@ button {
 
   .shop-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .map-row {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    align-items: stretch;
+  }
+
+  .map-selected .shop-slot {
+    height: 100%;
+    overflow: auto;
   }
 
   .song-main {

@@ -374,41 +374,43 @@ function App() {
   function renderMapPane() {
     return (
       <>
-        <section className="acts">
-          <ActView
-            act={current}
-            onSelect={(row, col) => handleSelectNode(row, col)}
-            selected={selected}
-            reachable={{
-              row: currentRow,
-              cols: reachableCols(current, currentRow, choices, currentAct),
-            }}
-          />
-        </section>
-        {isMobileView ? (
-          <section className="map-selected">
-            <p className="eyebrow">Selected Challenge</p>
-            {selectedNode ? (
-              <div className="shop-slot">
-                <h3 className="map-selected-title">
-                  {selectedNode.kind === 'shop'
-                    ? 'Gear Shop'
-                    : selectedNode.challenge?.name ?? 'Unknown'}
-                </h3>
-                <p className="meta">
-                  {selectedNode.kind === 'shop'
-                    ? 'Restock and upgrade (coming soon).'
-                    : selectedNode.challenge?.summary}
-                </p>
-                {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
-                  <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
-                ) : null}
-              </div>
-            ) : (
-              <p className="meta">Select a node to see challenge details.</p>
-            )}
+        <div className="map-row">
+          <section className="acts">
+            <ActView
+              act={current}
+              onSelect={(row, col) => handleSelectNode(row, col)}
+              selected={selected}
+              reachable={{
+                row: currentRow,
+                cols: reachableCols(current, currentRow, choices, currentAct),
+              }}
+            />
           </section>
-        ) : null}
+          {isMobileView ? (
+            <section className="map-selected">
+              <p className="eyebrow">Selected Challenge</p>
+              {selectedNode ? (
+                <div className="shop-slot">
+                  <h3 className="map-selected-title">
+                    {selectedNode.kind === 'shop'
+                      ? 'Gear Shop'
+                      : selectedNode.challenge?.name ?? 'Unknown'}
+                  </h3>
+                  <p className="meta">
+                    {selectedNode.kind === 'shop'
+                      ? 'Restock and upgrade (coming soon).'
+                      : selectedNode.challenge?.summary}
+                  </p>
+                  {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
+                    <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+                  ) : null}
+                </div>
+              ) : (
+                <p className="meta">Select a node to see challenge details.</p>
+              )}
+            </section>
+          ) : null}
+        </div>
         <section className="gear">
           <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
             <summary className="gear-summary">
