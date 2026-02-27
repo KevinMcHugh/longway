@@ -1,4 +1,4 @@
-.PHONY: codex-config-pull
+.PHONY: codex-config-pull web-dev-inspect web-screenshot
 
 CONTAINER_CODEX_HOME ?= /home/node/.codex
 LOCAL_CODEX_HOME ?= $(HOME)/.codex
@@ -21,3 +21,9 @@ codex-config-pull:
 	mkdir -p "$(LOCAL_CODEX_HOME)"; \
 	docker cp "$$cid:$(CONTAINER_CODEX_HOME)/." "$(LOCAL_CODEX_HOME)/"; \
 	echo "Copied Codex config from $$cid:$(CONTAINER_CODEX_HOME) to $(LOCAL_CODEX_HOME)"
+
+web-dev-inspect:
+	cd web && npm run dev:inspect
+
+web-screenshot:
+	cd web && npm run screenshot -- $(ARGS)

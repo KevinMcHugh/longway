@@ -14,8 +14,14 @@ Long Way To The Top is a terminal-first roguelike that swaps combat for rhythm. 
 
 ### Web client (React)
 - `cd web && npm install`
-- Run the client with `npm run dev` (Vite defaults to <http://localhost:5173>).
+- Run the client with `npm run dev`.
+- For Codex/frontend inspection, run `npm run dev:inspect` to bind to a fixed endpoint: <http://127.0.0.1:4173>.
+- Capture a screenshot with `npm run screenshot -- --url http://127.0.0.1:4173 --out ../tmp/frontend.png`.
 - Run web tests with `npm test -- --run`.
+- Root shortcuts:
+  - `make web-dev-inspect`
+  - `make web-screenshot ARGS="--url http://127.0.0.1:4173 --out ../tmp/frontend.png"`
+- If Playwright reports missing Linux libs, rebuild the devcontainer to pick up the updated `.devcontainer/Dockerfile`.
 
 Controls in the prototype:
 - `space`: pause/resume the climb
