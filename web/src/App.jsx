@@ -24,6 +24,7 @@ const themeOptions = [
   { value: 'default', label: 'Default' },
   { value: 'high-contrast', label: 'High Contrast' },
   { value: 'hells-bells', label: "Hell's Bells" },
+  { value: 'the-fool', label: 'The Fool' },
 ]
 const gearSlots = [ 'Shirt', 'Pants', 'Instrument', 'Amplifier' ]
 const instruments = [

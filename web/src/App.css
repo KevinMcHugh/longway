@@ -946,8 +946,11 @@ html[data-theme='hells-bells'] .shop-slot,
 html[data-theme='hells-bells'] .gear-collapsible,
 html[data-theme='hells-bells'] .origin-collapsible,
 html[data-theme='hells-bells'] .origin-group {
-  border-color: #626a73;
-  background: linear-gradient(160deg, #1a2027, #11161d);
+  border-color: #8e969f;
+  background: linear-gradient(155deg, #231912, #141820);
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 208, 36, 0.14),
+    0 0 28px rgba(255, 24, 24, 0.16);
 }
 
 html[data-theme='hells-bells'] .act-label,
@@ -957,30 +960,32 @@ html[data-theme='hells-bells'] .song-row,
 html[data-theme='hells-bells'] .shop-item,
 html[data-theme='hells-bells'] .star,
 html[data-theme='hells-bells'] .gear-tile {
-  border-color: #727a85;
-  background: #1f262f;
-  color: #ffeab0;
+  border-color: #a0a8b1;
+  background: #1a212b;
+  color: #ffe58d;
 }
 
 html[data-theme='hells-bells'] .eyebrow,
 html[data-theme='hells-bells'] .voltage-label {
-  color: #ffd339;
+  color: #ffce24;
+  text-shadow: 0 0 8px rgba(255, 206, 36, 0.32);
 }
 
 html[data-theme='hells-bells'] .primary {
-  background: linear-gradient(120deg, #ff3434, #ffcc30);
+  background: linear-gradient(120deg, #ff1313, #ffd523);
   color: #0d1015;
+  box-shadow: 0 0 18px rgba(255, 16, 16, 0.42);
 }
 
 html[data-theme='hells-bells'] .ghost {
-  border-color: #8a929d;
-  color: #ffeab0;
-  background: #1b222b;
+  border-color: #b5bec8;
+  color: #ffe58d;
+  background: #1b1f26;
 }
 
 html[data-theme='hells-bells'] .meta,
 html[data-theme='hells-bells'] .lede {
-  color: #f7d88a;
+  color: #ffd980;
 }
 
 html[data-theme='hells-bells'] .node-challenge {
@@ -997,6 +1002,69 @@ html[data-theme='hells-bells'] .node-boss {
 
 html[data-theme='hells-bells'] .node-selected {
   outline-color: #ffd339;
+}
+
+html[data-theme='the-fool'] .header,
+html[data-theme='the-fool'] .pane,
+html[data-theme='the-fool'] .options-panel,
+html[data-theme='the-fool'] .shop-slot,
+html[data-theme='the-fool'] .gear-collapsible,
+html[data-theme='the-fool'] .origin-collapsible,
+html[data-theme='the-fool'] .origin-group {
+  border-color: #ff59d5;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(72, 255, 212, 0.18), transparent 46%),
+    linear-gradient(150deg, #351e4f, #1a2b57);
+}
+
+html[data-theme='the-fool'] .act-label,
+html[data-theme='the-fool'] .voltage-meter,
+html[data-theme='the-fool'] .mobile-nav,
+html[data-theme='the-fool'] .song-row,
+html[data-theme='the-fool'] .shop-item,
+html[data-theme='the-fool'] .star,
+html[data-theme='the-fool'] .gear-tile {
+  border-color: #66ffd4;
+  background: #2a2a64;
+  color: #f9ffc6;
+}
+
+html[data-theme='the-fool'] .eyebrow,
+html[data-theme='the-fool'] .voltage-label {
+  color: #7eff7f;
+}
+
+html[data-theme='the-fool'] .primary {
+  background: linear-gradient(120deg, #2fffd1, #deff3a);
+  color: #18203f;
+  box-shadow: 0 0 16px rgba(64, 255, 210, 0.34);
+}
+
+html[data-theme='the-fool'] .ghost {
+  border-color: #7fe9ff;
+  color: #f5ffbe;
+  background: #2b306a;
+}
+
+html[data-theme='the-fool'] .meta,
+html[data-theme='the-fool'] .lede {
+  color: #edff9f;
+}
+
+html[data-theme='the-fool'] .node-challenge {
+  background: #b8ff2f;
+}
+
+html[data-theme='the-fool'] .node-shop {
+  background: #31f6ff;
+}
+
+html[data-theme='the-fool'] .node-boss {
+  background: #ff58ca;
+}
+
+html[data-theme='the-fool'] .node-selected {
+  outline-color: #7eff7f;
 }
 
 @media (min-width: 768px) {
