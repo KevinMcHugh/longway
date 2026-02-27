@@ -7,3 +7,4 @@ Long Way To The Top documentation lives here. Add or update files as features ev
 - `frontend-inspection.md`: fixed-port web run mode and screenshot capture workflow for Codex/UI checks.
 - `design-tooling.md`: Tailwind, shadcn/Radix, Storybook, and Playwright visual tooling for frontend polish.
 - `themes.md`: runtime theme selection and high-contrast mode behavior.
+- `tutorial-guide.md`: first-run onboarding guide and where players can reopen it.

@@ -1,6 +1,7 @@
 import './App.css'
 import { generateRun, nodeKinds, songOrigins, originGroups } from './lib/path'
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { guideSteps, markGuideSeen, readGuideState } from './lib/guide'
 
 const rowSpacing = 58
 const colSpacing = 68
@@ -92,6 +93,8 @@ function App() {
   const [ gameOver, setGameOver ] = useState(false)
   const [ newGameOpen, setNewGameOpen ] = useState(false)
   const [ optionsOpen, setOptionsOpen ] = useState(false)
+  const [ guideOpen, setGuideOpen ] = useState(false)
+  const [ guideStepIndex, setGuideStepIndex ] = useState(0)
   const [ isMobileView, setIsMobileView ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
@@ -123,6 +126,14 @@ function App() {
       setOptionsOpen(false)
     }
   }, [ isMobileView ])
+
+  useEffect(() => {
+    const state = readGuideState()
+    if (!state.seen) {
+      setGuideStepIndex(0)
+      setGuideOpen(true)
+    }
+  }, [])
 
   useEffect(() => {
     setGearOpen(!isMobileView)
@@ -281,6 +292,16 @@ function App() {
               <button className="ghost" type="button" onClick={() => setOptionsOpen(false)}>
                 Close
               </button>
+              <button
+                className="ghost"
+                type="button"
+                onClick={() => {
+                  setGuideStepIndex(0)
+                  setGuideOpen(true)
+                }}
+              >
+                Open guide
+              </button>
             </div>
           </div>
         </section>
@@ -362,6 +383,16 @@ function App() {
                     <button className="ghost" type="button" onClick={() => setMobileMode('map')}>
                       Return to map
                     </button>
+                    <button
+                      className="ghost"
+                      type="button"
+                      onClick={() => {
+                        setGuideStepIndex(0)
+                        setGuideOpen(true)
+                      }}
+                    >
+                      Open guide
+                    </button>
                   </div>
                   <div className="shop-slot">
                     <p className="meta">Instrument: {instrument}</p>
@@ -431,6 +462,42 @@ function App() {
           </aside>
         </div>
       )}
+      {guideOpen ? (
+        <div className="guide-overlay">
+          <div className="guide-card">
+            <p className="eyebrow">User Guide</p>
+            <h3>{guideSteps[ guideStepIndex ]?.title}</h3>
+            <p className="lede">{guideSteps[ guideStepIndex ]?.body}</p>
+            <p className="meta">
+              Step {guideStepIndex + 1} of {guideSteps.length}
+            </p>
+            <div className="dialog-actions">
+              <button
+                className="ghost"
+                type="button"
+                onClick={() => setGuideStepIndex((idx) => Math.max(0, idx - 1))}
+                disabled={guideStepIndex === 0}
+              >
+                Back
+              </button>
+              <button
+                className="primary"
+                type="button"
+                onClick={() => {
+                  if (guideStepIndex >= guideSteps.length - 1) {
+                    markGuideSeen()
+                    setGuideOpen(false)
+                    return
+                  }
+                  setGuideStepIndex((idx) => Math.min(guideSteps.length - 1, idx + 1))
+                }}
+              >
+                {guideStepIndex >= guideSteps.length - 1 ? 'Finish' : 'Next'}
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   )
 
