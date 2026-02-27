@@ -19,3 +19,10 @@ If you are developing a production application, we recommend using TypeScript wi
 
 - `npm run dev:inspect` runs Vite on `http://127.0.0.1:4173` with `--strictPort`.
 - `npm run screenshot -- --url http://127.0.0.1:4173 --out ../tmp/frontend.png` captures a headless screenshot using Playwright.
+
+## Design tooling
+
+- Tailwind CSS is configured in `tailwind.config.js` with shared tokens in `src/index.css`.
+- shadcn-compatible components live in `src/components/ui`.
+- Start Storybook with `npm run storybook`.
+- Run visual snapshot tests with `npm run test:visual` (or create baselines with `npm run test:visual:update`).

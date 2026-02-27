@@ -17,10 +17,16 @@ Long Way To The Top is a terminal-first roguelike that swaps combat for rhythm. 
 - Run the client with `npm run dev`.
 - For Codex/frontend inspection, run `npm run dev:inspect` to bind to a fixed endpoint: <http://127.0.0.1:4173>.
 - Capture a screenshot with `npm run screenshot -- --url http://127.0.0.1:4173 --out ../tmp/frontend.png`.
+- Run Storybook with `npm run storybook`.
+- Update visual baselines: `npm run test:visual:update`.
+- Validate visual snapshots: `npm run test:visual`.
 - Run web tests with `npm test -- --run`.
 - Root shortcuts:
   - `make web-dev-inspect`
   - `make web-screenshot ARGS="--url http://127.0.0.1:4173 --out ../tmp/frontend.png"`
+  - `make web-storybook`
+  - `make web-visual-update`
+  - `make web-visual`
 - If Playwright reports missing Linux libs, rebuild the devcontainer to pick up the updated `.devcontainer/Dockerfile`.
 
 Controls in the prototype:

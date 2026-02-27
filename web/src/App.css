@@ -563,3 +563,82 @@ h1 {
   color: #94a3b8;
   white-space: nowrap;
 }
+
+@media (max-width: 1024px) {
+  .app {
+    padding: 1rem;
+    gap: 0.75rem;
+  }
+
+  .layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pane.left,
+  .pane.right {
+    min-height: 420px;
+  }
+
+  .toolbar {
+    width: 100%;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.65rem;
+  }
+
+  .seed {
+    text-align: left;
+    width: 100%;
+  }
+
+  .acts {
+    height: auto;
+    min-height: 280px;
+  }
+
+  .gear ul {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  h1 {
+    font-size: 1.45rem;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .toolbar {
+    align-items: stretch;
+  }
+
+  .voltage-meter {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .song-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .song-meta {
+    white-space: normal;
+  }
+
+  .shop-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .origin-list {
+    grid-template-columns: 1fr;
+  }
+
+  .dialog-actions {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}

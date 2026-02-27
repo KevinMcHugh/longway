@@ -1,4 +1,4 @@
-.PHONY: codex-config-pull web-dev-inspect web-screenshot
+.PHONY: codex-config-pull web-dev-inspect web-screenshot web-storybook web-visual web-visual-update
 
 CONTAINER_CODEX_HOME ?= /home/node/.codex
 LOCAL_CODEX_HOME ?= $(HOME)/.codex
@@ -27,3 +27,12 @@ web-dev-inspect:
 
 web-screenshot:
 	cd web && npm run screenshot -- $(ARGS)
+
+web-storybook:
+	cd web && npm run storybook
+
+web-visual:
+	cd web && npm run test:visual
+
+web-visual-update:
+	cd web && npm run test:visual:update
