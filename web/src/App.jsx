@@ -10,8 +10,7 @@ const startingVoltage = 10000
 const voltagePenaltyPerMissingStar = 1000
 const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
-const mobileBreakpoint = 1100
-const smallMobileBreakpoint = 460
+const mobileBreakpoint = 768
 const minCircle = 1
 const maxCircle = 9
 const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx) => minCircle + idx)
@@ -87,10 +86,8 @@ function App() {
   const [ isMobileView, setIsMobileView ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
-  const [ isSmallMobileView, setIsSmallMobileView ] = useState(() =>
-    typeof window !== 'undefined' ? window.innerWidth <= smallMobileBreakpoint : false,
-  )
   const [ mobileMode, setMobileMode ] = useState('map')
+  const [ mapDetailsOpen, setMapDetailsOpen ] = useState(false)
   const [ gearOpen, setGearOpen ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth >= mobileBreakpoint : true,
   )
@@ -106,7 +103,6 @@ function App() {
     if (typeof window === 'undefined') return undefined
     function onResize() {
       setIsMobileView(window.innerWidth < mobileBreakpoint)
-      setIsSmallMobileView(window.innerWidth <= smallMobileBreakpoint)
     }
     onResize()
     window.addEventListener('resize', onResize)
@@ -374,21 +370,28 @@ function App() {
   function renderMapPane() {
     return (
       <>
-        <div className="map-row">
-          <section className="acts">
-            <ActView
-              act={current}
-              onSelect={(row, col) => handleSelectNode(row, col)}
-              selected={selected}
-              reachable={{
-                row: currentRow,
-                cols: reachableCols(current, currentRow, choices, currentAct),
-              }}
-            />
-          </section>
-          {isMobileView ? (
-            <section className="map-selected">
-              <p className="eyebrow">Selected Challenge</p>
+        <section className="acts">
+          <ActView
+            act={current}
+            onSelect={(row, col) => handleSelectNode(row, col)}
+            selected={selected}
+            reachable={{
+              row: currentRow,
+              cols: reachableCols(current, currentRow, choices, currentAct),
+            }}
+          />
+        </section>
+        {isMobileView ? (
+          <section className="map-selected">
+            <details
+              className="map-selected-collapsible"
+              open={mapDetailsOpen}
+              onToggle={(e) => setMapDetailsOpen(e.currentTarget.open)}
+            >
+              <summary className="map-selected-summary">
+                <span className="eyebrow">Selected Challenge</span>
+                <span className="collapse-icon" aria-hidden="true">▾</span>
+              </summary>
               {selectedNode ? (
                 <div className="shop-slot">
                   <h3 className="map-selected-title">
@@ -408,9 +411,9 @@ function App() {
               ) : (
                 <p className="meta">Select a node to see challenge details.</p>
               )}
-            </section>
-          ) : null}
-        </div>
+            </details>
+          </section>
+        ) : null}
         <section className="gear">
           <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
             <summary className="gear-summary">

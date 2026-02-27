@@ -259,13 +259,6 @@ button {
   min-height: 270px;
 }
 
-.map-row {
-  min-height: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 0.55rem;
-}
-
 .gear {
   margin-top: 0.7rem;
   padding-top: 0.65rem;
@@ -276,6 +269,24 @@ button {
   display: grid;
   gap: 0.35rem;
   min-height: 0;
+}
+
+.map-selected-collapsible {
+  border: 1px solid #2f4d6d;
+  border-radius: 0.64rem;
+  padding: 0.45rem;
+  background: rgba(10, 22, 36, 0.9);
+}
+
+.map-selected-summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.map-selected-collapsible:not([open]) .collapse-icon {
+  transform: rotate(-90deg);
 }
 
 .map-selected-title {
@@ -810,16 +821,6 @@ button {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .map-row {
-    grid-template-columns: minmax(0, 1fr) 300px;
-    align-items: stretch;
-  }
-
-  .map-selected .shop-slot {
-    height: 100%;
-    overflow: auto;
-  }
-
   .song-main {
     grid-template-columns: 1fr auto;
     align-items: center;
@@ -847,7 +848,7 @@ button {
   }
 }
 
-@media (min-width: 1100px) {
+@media (min-width: 768px) {
   .app {
     height: 100vh;
     max-height: 100vh;
