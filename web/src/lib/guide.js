@@ -5,7 +5,7 @@ export const guideFlows = {
     {
       id: 'concept',
       title: 'Roguelike + Rhythm',
-      body: 'This is a roguelike strategy layer that sits alongside your rhythm game. Your goal is to reach the end of Act 3 by successfully playing songs, and challenges get harder as you climb.',
+      body: 'This is a roguelike strategy layer that sits alongside your rhythm game. Your goal is to reach the end of Act 3 by successfully playing songs, and challenges get harder as you climb. Voltage is your run health, and you lose when it hits zero.',
     },
     {
       id: 'select-challenge',
@@ -24,7 +24,7 @@ export const guideFlows = {
     {
       id: 'score-entry',
       title: 'Enter Your Results',
-      body: 'Use Enter stars to record your performance. Results decide voltage loss and whether your run continues.',
+      body: 'Use Enter stars to record your performance. Voltage loss means your voltage drops when you miss the challenge star target, and low voltage puts your run at risk.',
     },
   ],
 }
