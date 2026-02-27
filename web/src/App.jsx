@@ -172,26 +172,32 @@ function App() {
   return (
     <main className="app">
       <header className="header">
-        <div>
+        <div className="title-block">
+          <p className="eyebrow">Roguelike Rhythm Climb</p>
           <h1>A Long Way To The Top</h1>
+          <p className="lede">
+            Route your setlist, manage voltage, and survive the climb.
+          </p>
         </div>
         <div className="toolbar">
-          <div className="act-label">Act {current?.index ?? 1}</div>
-          <div className="act-label">Circle {circle}</div>
-            <div className="voltage-meter">
-              <p className="eyebrow">Voltage</p>
-              <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
-                {voltage.toLocaleString()} V
-              </div>
-              <div className="voltage-bar" aria-label="Voltage remaining">
-                <div
-                  className={`voltage-bar-fill ${voltageColorClass}`}
-                  style={{ width: `${voltagePct}%` }}
-                />
-              </div>
+          <div className="run-badges">
+            <div className="act-label">Act {current?.index ?? 1}</div>
+            <div className="act-label">Circle {circle}</div>
+          </div>
+          <div className="voltage-meter">
+            <p className="eyebrow">Voltage</p>
+            <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
+              {voltage.toLocaleString()} V
             </div>
+            <div className="voltage-bar" aria-label="Voltage remaining">
+              <div
+                className={`voltage-bar-fill ${voltageColorClass}`}
+                style={{ width: `${voltagePct}%` }}
+              />
+            </div>
+          </div>
           <div className="seed">
-            <div>Seed: {seed}</div>
+            <div className="seed-value">Seed: {seed}</div>
             <div className="autosave">
               Autosave: {loadedFromStorage ? 'resumed' : 'new run'}
               {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
@@ -682,19 +688,24 @@ function ActView({ act, selected, onSelect, reachable }) {
 
   return (
     <div className="act">
-      <h2>Act {act.index}</h2>
-      <div className="grid" style={{ height, width }}>
-        {rows.map((row, rowIdx) => (
-          <RowView
-            key={`r-${rowIdx}`}
-            row={row}
-            rowIdx={rowIdx}
-            rows={rows}
-            onSelect={onSelect}
-            selected={selected}
-            reachable={reachable}
-          />
-        ))}
+      <div className="act-heading">
+        <h2>Act {act.index}</h2>
+        <p className="meta">Select a reachable node to continue your route.</p>
+      </div>
+      <div className="act-map">
+        <div className="grid" style={{ height, width }}>
+          {rows.map((row, rowIdx) => (
+            <RowView
+              key={`r-${rowIdx}`}
+              row={row}
+              rowIdx={rowIdx}
+              rows={rows}
+              onSelect={onSelect}
+              selected={selected}
+              reachable={reachable}
+            />
+          ))}
+        </div>
       </div>
     </div>
   )
@@ -749,19 +760,23 @@ function RowView({ row, rowIdx, rows, onSelect, selected, reachable }) {
 }
 
 function NodeView({ node, x, y, selected, reachable, onSelect }) {
+  const kindLabel = node.kind === 'boss' ? 'Boss' : node.kind === 'shop' ? 'Shop' : 'Challenge'
   return (
-    <div
-      className="node-wrapper"
+    <button
+      type="button"
+      className="node-wrapper node-hit"
       style={{ left: x, top: y }}
       onClick={reachable ? onSelect : undefined}
+      disabled={!reachable}
+      aria-label={`${kindLabel} node`}
     >
-      <div
+      <span
         className={`node node-${node.kind} ${selected ? 'node-selected' : ''} ${reachable ? 'node-reachable' : 'node-disabled'
           }`}
       >
         {node.kind === 'boss' ? 'B' : node.kind === 'shop' ? '$' : 'C'}
-      </div>
-    </div>
+      </span>
+    </button>
   )
 }
 
