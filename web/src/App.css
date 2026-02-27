@@ -1011,10 +1011,10 @@ html[data-theme='the-fool'] .shop-slot,
 html[data-theme='the-fool'] .gear-collapsible,
 html[data-theme='the-fool'] .origin-collapsible,
 html[data-theme='the-fool'] .origin-group {
-  border-color: #ff59d5;
+  border-color: #ffe900;
   background:
-    radial-gradient(circle at 92% 12%, rgba(72, 255, 212, 0.18), transparent 46%),
-    linear-gradient(150deg, #351e4f, #1a2b57);
+    radial-gradient(circle at 90% 12%, rgba(188, 255, 0, 0.3), transparent 46%),
+    linear-gradient(150deg, #6a23a8, #34135c);
 }
 
 html[data-theme='the-fool'] .act-label,
@@ -1024,47 +1024,47 @@ html[data-theme='the-fool'] .song-row,
 html[data-theme='the-fool'] .shop-item,
 html[data-theme='the-fool'] .star,
 html[data-theme='the-fool'] .gear-tile {
-  border-color: #66ffd4;
-  background: #2a2a64;
-  color: #f9ffc6;
+  border-color: #ffe900;
+  background: #5b2395;
+  color: #fff7a5;
 }
 
 html[data-theme='the-fool'] .eyebrow,
 html[data-theme='the-fool'] .voltage-label {
-  color: #7eff7f;
+  color: #adff29;
 }
 
 html[data-theme='the-fool'] .primary {
-  background: linear-gradient(120deg, #2fffd1, #deff3a);
-  color: #18203f;
-  box-shadow: 0 0 16px rgba(64, 255, 210, 0.34);
+  background: linear-gradient(120deg, #ffe900, #71ff24);
+  color: #2d0f4a;
+  box-shadow: 0 0 16px rgba(173, 255, 41, 0.42);
 }
 
 html[data-theme='the-fool'] .ghost {
-  border-color: #7fe9ff;
-  color: #f5ffbe;
-  background: #2b306a;
+  border-color: #d7ff38;
+  color: #fff8ab;
+  background: #6126a0;
 }
 
 html[data-theme='the-fool'] .meta,
 html[data-theme='the-fool'] .lede {
-  color: #edff9f;
+  color: #fff3a2;
 }
 
 html[data-theme='the-fool'] .node-challenge {
-  background: #b8ff2f;
+  background: #ffe900;
 }
 
 html[data-theme='the-fool'] .node-shop {
-  background: #31f6ff;
+  background: #7dff22;
 }
 
 html[data-theme='the-fool'] .node-boss {
-  background: #ff58ca;
+  background: #c84fff;
 }
 
 html[data-theme='the-fool'] .node-selected {
-  outline-color: #7eff7f;
+  outline-color: #adff29;
 }
 
 @media (min-width: 768px) {
