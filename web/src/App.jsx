@@ -2,9 +2,9 @@ import './App.css'
 import { generateRun, nodeKinds, songOrigins, originGroups } from './lib/path'
 import { useEffect, useMemo, useRef, useState } from 'react'
 
-const rowSpacing = 70
-const colSpacing = 80
-const nodeSize = 32
+const rowSpacing = 58
+const colSpacing = 68
+const nodeSize = 30
 const maxStars = 6
 const startingVoltage = 10000
 const voltagePenaltyPerMissingStar = 1000
