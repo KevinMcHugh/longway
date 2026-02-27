@@ -88,6 +88,7 @@ function App() {
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
   const [ mobileMode, setMobileMode ] = useState('map')
+  const [ gearOpen, setGearOpen ] = useState(true)
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
   const [ pendingCircle, setPendingCircle ] = useState(circle)
   const [ pendingSeed, setPendingSeed ] = useState('')
@@ -196,8 +197,6 @@ function App() {
           startEnabled,
         })
 
-  const mobileModeLabel = mobileModes.find((m) => m.id === mobileMode)?.label ?? 'Map'
-
   return (
     <main className={`app ${isMobileView ? 'app-mobile' : ''}`}>
       <header className="header">
@@ -212,25 +211,17 @@ function App() {
           <div className="run-badges">
             <div className="act-label">Act {current?.index ?? 1}</div>
             <div className="act-label">Circle {circle}</div>
-            {isMobileView ? <div className="act-label">Mode: {mobileModeLabel}</div> : null}
           </div>
           <div className="voltage-meter">
-            <p className="eyebrow">Voltage</p>
             <div className={`voltage-value ${voltage <= lowVoltageThreshold ? 'voltage-low' : ''}`}>
-              {voltage.toLocaleString()} V
+              <span className="voltage-label">Voltage</span>
+              <span>{voltage.toLocaleString()} V</span>
             </div>
             <div className="voltage-bar" aria-label="Voltage remaining">
               <div
                 className={`voltage-bar-fill ${voltageColorClass}`}
                 style={{ width: `${voltagePct}%` }}
               />
-            </div>
-          </div>
-          <div className="seed">
-            <div className="seed-value">Seed: {seed}</div>
-            <div className="autosave">
-              Autosave: {loadedFromStorage ? 'resumed' : 'new run'}
-              {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
             </div>
           </div>
           {!isMobileView ? (
@@ -270,16 +261,23 @@ function App() {
                   <p className="eyebrow">Options Mode</p>
                   <h3>Run Controls</h3>
                   <p className="lede">Switch modes below and configure your next run.</p>
+                  <div className="shop-slot">
+                    <p className="meta">Seed: {seed}</p>
+                    <p className="meta">
+                      Autosave: {loadedFromStorage ? 'resumed' : 'new run'}
+                      {lastSaved ? ` • saved ${new Date(lastSaved).toLocaleTimeString()}` : ''}
+                    </p>
+                  </div>
                   <div className="dialog-actions">
                     <button
-                      className="ghost"
+                      className="primary"
                       type="button"
                       onClick={() => {
                         primeNewGameForm()
                         setMobileMode('newGame')
                       }}
                     >
-                      Configure new run
+                      New game
                     </button>
                     <button className="ghost" type="button" onClick={() => setMobileMode('map')}>
                       Return to map
@@ -385,15 +383,20 @@ function App() {
           />
         </section>
         <section className="gear">
-          <p className="eyebrow">Gear</p>
-          <ul className="gear-grid">
-            {gearSlots.map((slot) => (
-              <li key={slot} className="gear-tile">
-                <div className="gear-slot">{slot}</div>
-                <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
-              </li>
-            ))}
-          </ul>
+          <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
+            <summary className="gear-summary">
+              <span className="eyebrow">Gear</span>
+              <span className="collapse-icon" aria-hidden="true">▾</span>
+            </summary>
+            <ul className="gear-grid">
+              {gearSlots.map((slot) => (
+                <li key={slot} className="gear-tile">
+                  <div className="gear-slot">{slot}</div>
+                  <div className="gear-name">{gear[ slot ]?.name ?? 'None'}</div>
+                </li>
+              ))}
+            </ul>
+          </details>
         </section>
       </>
     )

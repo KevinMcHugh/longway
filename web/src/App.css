@@ -73,16 +73,26 @@ h1 {
 
 .voltage-meter {
   display: grid;
-  gap: 0.2rem;
-  padding: 0.55rem 0.7rem;
+  gap: 0.15rem;
+  padding: 0.35rem 0.5rem;
   border-radius: 0.75rem;
   border: 1px solid color-mix(in hsl, hsl(var(--border)) 85%, white 15%);
   background: rgba(8, 18, 31, 0.75);
 }
 
 .voltage-value {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.35rem;
   font-weight: 800;
-  font-size: 1rem;
+  font-size: 0.9rem;
+}
+
+.voltage-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8be9d1;
 }
 
 .voltage-low {
@@ -109,20 +119,6 @@ h1 {
 
 .voltage-bar-mid {
   background: linear-gradient(90deg, #f8574f, #f5c451);
-}
-
-.seed {
-  display: grid;
-  gap: 0.15rem;
-  color: #b6c8d8;
-  padding: 0.55rem 0.7rem;
-  border-radius: 0.75rem;
-  border: 1px solid color-mix(in hsl, hsl(var(--border)) 85%, white 15%);
-  background: rgba(8, 18, 31, 0.75);
-}
-
-.seed-value {
-  font-weight: 700;
 }
 
 .autosave {
@@ -264,6 +260,25 @@ button {
   margin-top: 0.7rem;
   padding-top: 0.65rem;
   border-top: 1px solid rgba(79, 109, 134, 0.45);
+}
+
+.gear-collapsible {
+  border: 1px solid #2f4d6d;
+  border-radius: 0.64rem;
+  padding: 0.5rem;
+  background: rgba(10, 22, 36, 0.9);
+}
+
+.gear-summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.35rem;
+}
+
+.gear-collapsible:not([open]) .collapse-icon {
+  transform: rotate(-90deg);
 }
 
 .gear-grid {
@@ -807,7 +822,7 @@ button {
   }
 
   .voltage-meter,
-  .seed {
+  .shop-slot {
     padding: 0.44rem 0.58rem;
   }
 
