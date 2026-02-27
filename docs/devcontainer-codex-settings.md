@@ -12,3 +12,13 @@ This allows image-provided defaults (including `auth.json` from `.devcontainer/a
 
 - `.devcontainer/local/codex` is git-ignored (except `.gitkeep`) so local settings are not committed.
 - If you want to reset Codex state, remove files in `.devcontainer/local/codex` and rebuild/reopen the container.
+
+## Pull Config To Host
+
+If you want to copy Codex config out of a running devcontainer to your host Codex install, run:
+
+```bash
+make codex-config-pull
+```
+
+This target copies `/home/node/.codex` from the running devcontainer for this workspace into `~/.codex` on the host.
