@@ -866,6 +866,9 @@ function App() {
     switch (kind) {
       case 'start':
         startChallenge()
+        if (isMobileView) {
+          setMobileMode('challenge')
+        }
         break
       case 'enter':
         setPhase('entering')
@@ -875,6 +878,9 @@ function App() {
         break
       case 'advance':
         advanceRow()
+        if (isMobileView) {
+          setMobileMode('map')
+        }
         break
       case 'nextAct':
         advanceAct()
