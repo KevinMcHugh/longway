@@ -9,8 +9,10 @@
   // Only mount the repo. No extra host mounts.
   "workspaceMount": "source=${localWorkspaceFolder},target=/workspaces/project,type=bind,consistency=cached",
 
-  // Don't mount your host HOME, SSH keys, or gitconfig automatically.
-  "mounts": [],
+  // Persist Codex settings/permissions on the host across rebuilds.
+  "mounts": [
+    "source=${localWorkspaceFolder}/.devcontainer/local/codex,target=/home/node/.codex,type=bind,consistency=cached"
+  ],
 
   // Further hardening
   "runArgs": [
@@ -23,21 +25,19 @@
     // Optional but good isolation: no access to host network.
     // Comment this out if Codex can't reach OpenAI from your setup.
     // "--network=none"
-    
+
     // Ensure container can't see host devices.
     "--device-cgroup-rule=c 1:3 rwm"
   ],
 
-  // Keep Codex state inside the container (not your host)
   "remoteUser": "node",
   "containerEnv": {
     "CODEX_HOME": "/home/node/.codex",
     "XDG_CONFIG_HOME": "/home/node/.config",
     "XDG_DATA_HOME": "/home/node/.local/share"
   },
-  "postCreateCommand": "mkdir -p /home/node/.codex /home/node/.config /home/node/.local/share",
+  "postCreateCommand": "mkdir -p /home/node/.codex /home/node/.config /home/node/.local/share && cp -an /opt/codex-seed/. /home/node/.codex/",
   "features": {
     "ghcr.io/devcontainers/features/go:1": {}
   }
-
 }

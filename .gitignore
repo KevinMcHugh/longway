@@ -3,3 +3,6 @@ auth.json
 .local-go
 node_modules
 web/node_modules
+
+.devcontainer/local/codex/*
+!.devcontainer/local/codex/.gitkeep

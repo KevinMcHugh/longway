@@ -28,14 +28,15 @@ ENV XDG_DATA_HOME=/home/node/.local/share
 ENV CODEX_HOME=/home/node/.codex
 
 # create codex + xdg dirs as root for now
-RUN mkdir -p "$CODEX_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME"
+RUN mkdir -p "$CODEX_HOME" "$XDG_CONFIG_HOME" "$XDG_DATA_HOME" /opt/codex-seed
 
-# copy auth token to codex home (runs as root; file becomes root:root)
-# Note: auth.json should be copied to .devcontainer/ before building
-COPY auth.json $CODEX_HOME/auth.json
+# seed codex home from files in the image. At runtime, /home/node/.codex is host-mounted
+# and postCreateCommand copies missing files from /opt/codex-seed into that mount.
+COPY auth.json /opt/codex-seed/auth.json
+COPY local/codex/ /opt/codex-seed/
 
 # 🔑 FIX: hand ownership of everything under /home/node to the node user
-RUN chown -R node:node /home/node
+RUN chown -R node:node /home/node /opt/codex-seed
 
 # now drop to the built-in non-root user from the node image
 USER node
