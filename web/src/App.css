@@ -896,9 +896,33 @@ button {
     padding: 0.7rem;
   }
 
+  .title-block .eyebrow,
+  .title-block .lede {
+    display: none;
+  }
+
   .pane,
   .header {
     border-radius: 0.8rem;
+  }
+
+  .toolbar {
+    grid-template-columns: 1fr;
+    gap: 0.38rem;
+  }
+
+  .voltage-meter {
+    grid-column: 1 / -1;
+    order: 99;
+    border: 0;
+    border-top: 1px solid rgba(79, 109, 134, 0.5);
+    border-radius: 0;
+    background: transparent;
+    padding: 0.35rem 0 0;
+  }
+
+  .voltage-bar {
+    height: 7px;
   }
 
   .node {

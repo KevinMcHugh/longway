@@ -11,6 +11,7 @@ const voltagePenaltyPerMissingStar = 1000
 const lowVoltageThreshold = 3000
 const STORAGE_KEY = 'longway-save-v1'
 const mobileBreakpoint = 900
+const smallMobileBreakpoint = 460
 const minCircle = 1
 const maxCircle = 9
 const circleOptions = Array.from({ length: maxCircle - minCircle + 1 }, (_, idx) => minCircle + idx)
@@ -87,8 +88,13 @@ function App() {
   const [ isMobileView, setIsMobileView ] = useState(() =>
     typeof window !== 'undefined' ? window.innerWidth < mobileBreakpoint : false,
   )
+  const [ isSmallMobileView, setIsSmallMobileView ] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth <= smallMobileBreakpoint : false,
+  )
   const [ mobileMode, setMobileMode ] = useState('map')
-  const [ gearOpen, setGearOpen ] = useState(true)
+  const [ gearOpen, setGearOpen ] = useState(() =>
+    typeof window !== 'undefined' ? window.innerWidth > smallMobileBreakpoint : true,
+  )
   const [ pendingInstrument, setPendingInstrument ] = useState(instrument)
   const [ pendingCircle, setPendingCircle ] = useState(circle)
   const [ pendingSeed, setPendingSeed ] = useState('')
@@ -101,6 +107,7 @@ function App() {
     if (typeof window === 'undefined') return undefined
     function onResize() {
       setIsMobileView(window.innerWidth < mobileBreakpoint)
+      setIsSmallMobileView(window.innerWidth <= smallMobileBreakpoint)
     }
     onResize()
     window.addEventListener('resize', onResize)
@@ -112,6 +119,12 @@ function App() {
       setNewGameOpen(false)
     }
   }, [ isMobileView ])
+
+  useEffect(() => {
+    if (isSmallMobileView) {
+      setGearOpen(false)
+    }
+  }, [ isSmallMobileView ])
 
   useEffect(() => {
     if (!hydrated.current) {
@@ -858,7 +871,7 @@ function ActView({ act, selected, onSelect, reachable }) {
     <div className="act">
       <div className="act-heading">
         <h2>Act {act.index}</h2>
-        <p className="meta">Select a reachable node to continue your route.</p>
+        <p className="meta">Select your next challenge</p>
       </div>
       <div className="act-map">
         <div className="grid" style={{ height, width }}>
