@@ -196,6 +196,7 @@ button {
 .mobile-pane.left {
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
+  gap: 0.4rem;
 }
 
 .mobile-pane .acts {
@@ -257,6 +258,21 @@ button {
 
 .acts {
   min-height: 270px;
+}
+
+.map-preview {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.map-selected-title {
+  margin: 0 0 0.2rem 0;
+  font-size: 0.96rem;
+}
+
+.map-preview-action {
+  margin-top: 0.5rem;
+  width: 100%;
 }
 
 .gear {
@@ -934,6 +950,23 @@ button {
   .toolbar {
     grid-template-columns: 1fr;
     gap: 0.38rem;
+  }
+
+  .mobile-pane.left {
+    gap: 0.3rem;
+  }
+
+  .mobile-pane.left .act {
+    gap: 0.28rem;
+  }
+
+  .mobile-pane.left .act-heading {
+    gap: 0.35rem;
+    align-items: center;
+  }
+
+  .mobile-pane.left .act-map {
+    padding: 0.32rem;
   }
 
   .node {

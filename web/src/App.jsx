@@ -202,6 +202,12 @@ function App() {
           canAdvanceAct,
           startEnabled,
         })
+  const mapAction =
+    action &&
+    (action.kind === 'start' ||
+      (selectedNode?.kind === 'shop' && action.kind === 'advance'))
+      ? action
+      : null
 
   return (
     <main className={`app ${isMobileView ? 'app-mobile' : ''}`}>
@@ -386,6 +392,40 @@ function App() {
             }}
           />
         </section>
+        {isMobileView ? (
+          <section className="map-preview">
+            <p className="eyebrow">Selected Challenge</p>
+            {selectedNode ? (
+              <div className="shop-slot">
+                <h3 className="map-selected-title">
+                  {selectedNode.kind === 'shop'
+                    ? 'Gear Shop'
+                    : selectedNode.challenge?.name ?? 'Unknown'}
+                </h3>
+                <p className="meta">
+                  {selectedNode.kind === 'shop'
+                    ? 'Restock and upgrade (coming soon).'
+                    : selectedNode.challenge?.summary}
+                </p>
+                {selectedNode.kind !== 'shop' && selectedNode.challenge?.goal ? (
+                  <p className="goal">Goal: average {renderStars(selectedNode.challenge.goal)}</p>
+                ) : null}
+                {mapAction ? (
+                  <button
+                    className="primary map-preview-action"
+                    type="button"
+                    onClick={() => runPrimaryAction(mapAction.kind)}
+                    disabled={mapAction.disabled}
+                  >
+                    {mapAction.label}
+                  </button>
+                ) : null}
+              </div>
+            ) : (
+              <p className="meta">Select a node to see challenge details.</p>
+            )}
+          </section>
+        ) : null}
         {!isMobileView ? (
           <section className="gear">
             <details className="gear-collapsible" open={gearOpen} onToggle={(e) => setGearOpen(e.currentTarget.open)}>
@@ -531,27 +571,7 @@ function App() {
           {action ? (
             <button
               className="primary"
-              onClick={() => {
-                switch (action.kind) {
-                  case 'start':
-                    startChallenge()
-                    break
-                  case 'enter':
-                    setPhase('entering')
-                    break
-                  case 'submit':
-                    submitStars()
-                    break
-                  case 'advance':
-                    advanceRow()
-                    break
-                  case 'nextAct':
-                    advanceAct()
-                    break
-                  default:
-                    break
-                }
-              }}
+              onClick={() => runPrimaryAction(action.kind)}
               disabled={action.disabled}
             >
               {action.label}
@@ -838,6 +858,28 @@ function App() {
       ...prev,
       [ slot ]: item,
     }))
+  }
+
+  function runPrimaryAction(kind) {
+    switch (kind) {
+      case 'start':
+        startChallenge()
+        break
+      case 'enter':
+        setPhase('entering')
+        break
+      case 'submit':
+        submitStars()
+        break
+      case 'advance':
+        advanceRow()
+        break
+      case 'nextAct':
+        advanceAct()
+        break
+      default:
+        break
+    }
   }
 }
 
